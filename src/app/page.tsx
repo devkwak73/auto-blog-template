@@ -8,14 +8,15 @@ import Pagination from "@/components/Pagination";
 
 const LIMIT = 10;
 
-const categoryLabels: Record<string, string> = {
-  before: "입찰준비",
-  bidding: "입찰·낙찰",
-  after: "명도·출구",
-  tax: "세금·대출",
-  law: "권리분석",
-  ai: "AI활용",
-};
+const categories: { key: string | null; label: string }[] = [
+  { key: null,       label: "전체" },
+  { key: "before",   label: "입찰준비" },
+  { key: "bidding",  label: "입찰·낙찰" },
+  { key: "after",    label: "명도·출구" },
+  { key: "tax",      label: "세금·대출" },
+  { key: "law",      label: "권리분석" },
+  { key: "ai",       label: "AI활용" },
+];
 
 type SearchParams = Promise<{
   view?: string;
@@ -31,9 +32,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   const offset = (currentPage - 1) * LIMIT;
 
   const whereCategory = category ? " AND category = ?" : "";
-  const queryParams: (string | number)[] = category
-    ? [category, LIMIT, offset]
-    : [LIMIT, offset];
+  const queryParams: (string | number)[] = category ? [category, LIMIT, offset] : [LIMIT, offset];
   const countParams: string[] = category ? [category] : [];
 
   const [[{ total }]] = await pool.query<RowDataPacket[]>(
@@ -51,38 +50,77 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
   const totalPages = Math.ceil(total / LIMIT);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+
+      {/* ── 헤더 ──────────────────────────────────── */}
+      <header style={{ background: "var(--header-bg)" }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "2rem 1.5rem 1.75rem" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem" }}>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <div style={{
+                fontSize: "0.6875rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                marginBottom: "0.5rem",
+              }}>
+                부동산 경매 전문 블로그
+              </div>
+              <h1 style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
+                fontWeight: 800,
+                color: "var(--header-text)",
+                lineHeight: 1.2,
+                letterSpacing: "-0.01em",
+              }}>
                 {process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기"}
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">AI로 더 쉽게, 더 스마트하게</p>
+              <p style={{
+                fontSize: "0.8125rem",
+                color: "var(--header-muted)",
+                marginTop: "0.5rem",
+                letterSpacing: "0.02em",
+              }}>
+                AI로 더 쉽게, 더 스마트하게 — 경매 기초부터 실전까지
+              </p>
             </div>
+            <div style={{
+              flexShrink: 0,
+              width: "3px",
+              height: "4.5rem",
+              background: "var(--accent)",
+              borderRadius: "2px",
+            }} />
           </div>
         </div>
       </header>
 
-      {/* 카테고리 필터 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="flex gap-1.5 overflow-x-auto py-3 scrollbar-hide">
-            {([null, "auction", "ai", "invest", "law", "general"] as (string | null)[]).map((cat) => {
-              const label = cat ? (categoryLabels[cat] || cat) : "전체";
-              const isActive = (!cat && !category) || cat === category;
-              const href = cat ? `/?view=${currentView}&category=${cat}` : `/?view=${currentView}`;
+      {/* ── 카테고리 탭 ───────────────────────────── */}
+      <div style={{
+        background: "var(--bg-card)",
+        borderBottom: "1px solid var(--border)",
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+      }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "0 1.5rem" }}>
+          <div
+            className="scrollbar-hide"
+            style={{ display: "flex", overflowX: "auto" }}
+          >
+            {categories.map(({ key, label }) => {
+              const isActive = (!key && !category) || key === category;
+              const href = key
+                ? `/?view=${currentView}&category=${key}`
+                : `/?view=${currentView}`;
               return (
                 <a
-                  key={cat ?? "all"}
+                  key={key ?? "all"}
                   href={href}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                  }`}
+                  className={`cat-tab${isActive ? " active" : ""}`}
                 >
                   {label}
                 </a>
@@ -92,11 +130,20 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto">
+      {/* ── 메인 콘텐츠 ───────────────────────────── */}
+      <main style={{ maxWidth: "56rem", margin: "0 auto", padding: "0 1.5rem" }}>
+
         {/* 뷰 토글 + 글 수 */}
-        <div className="flex items-center justify-between px-4 py-4">
-          <span className="text-sm text-gray-500">
-            총 <strong className="text-gray-700">{total}</strong>개의 글
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "1.25rem 0",
+        }}>
+          <span style={{ fontSize: "0.8125rem", color: "var(--ink-muted)" }}>
+            총{" "}
+            <strong style={{ color: "var(--ink)", fontWeight: 700 }}>{total}</strong>
+            개의 글
           </span>
           <Suspense>
             <ViewToggle currentView={currentView} />
@@ -104,9 +151,16 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
         </div>
 
         {/* 글 목록 */}
-        <div className="bg-white shadow-sm rounded-xl overflow-hidden mb-6">
+        <div style={{
+          background: "var(--bg-card)",
+          borderRadius: "12px",
+          border: "1px solid var(--border)",
+          overflow: "hidden",
+          marginBottom: "1.5rem",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        }}>
           {currentView === "card" ? (
-            <div className="p-4">
+            <div style={{ padding: "1.25rem" }}>
               <PostCard posts={posts as unknown as Partial<import("@/types").Post>[]} />
             </div>
           ) : (
@@ -121,6 +175,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
           view={currentView}
           category={category}
         />
+        <div style={{ height: "3rem" }} />
       </main>
     </div>
   );

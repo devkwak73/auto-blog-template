@@ -11,7 +11,6 @@ export default function ViewToggle({ currentView }: ViewToggleProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 첫 방문 시 localStorage 선호 설정 적용
   useEffect(() => {
     const urlView = searchParams.get("view");
     if (!urlView) {
@@ -33,28 +32,31 @@ export default function ViewToggle({ currentView }: ViewToggleProps) {
   };
 
   return (
-    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+    <div className="view-toggle">
       <button
         onClick={() => switchView("list")}
         aria-label="목록형"
-        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          currentView === "list"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
+        className={`view-btn${currentView === "list" ? " active" : ""}`}
       >
-        ☰ 목록
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/>
+          <rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/>
+          <rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/>
+        </svg>
+        목록
       </button>
       <button
         onClick={() => switchView("card")}
         aria-label="카드형"
-        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          currentView === "card"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
+        className={`view-btn${currentView === "card" ? " active" : ""}`}
       >
-        ⊞ 카드
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <rect x="0" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="0" width="6" height="6" rx="1.5" fill="currentColor"/>
+          <rect x="0" y="8" width="6" height="6" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="8" width="6" height="6" rx="1.5" fill="currentColor"/>
+        </svg>
+        카드
       </button>
     </div>
   );

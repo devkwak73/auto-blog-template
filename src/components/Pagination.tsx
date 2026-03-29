@@ -18,42 +18,49 @@ export default function Pagination({ currentPage, totalPages, view, category }: 
     return `/?${params.toString()}`;
   };
 
-  // 최대 5개 페이지 버튼 표시
   const startPage = Math.max(1, currentPage - 2);
   const endPage = Math.min(totalPages, startPage + 4);
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   return (
-    <nav aria-label="페이지 네비게이션" className="flex justify-center items-center gap-1 mt-8">
+    <nav aria-label="페이지 네비게이션" className="pagination" style={{ marginBottom: "0" }}>
       {currentPage > 1 && (
-        <Link
-          href={buildHref(currentPage - 1)}
-          className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-        >
-          ‹ 이전
+        <Link href={buildHref(currentPage - 1)} className="page-btn">
+          ‹
         </Link>
+      )}
+
+      {startPage > 1 && (
+        <>
+          <Link href={buildHref(1)} className="page-btn">1</Link>
+          {startPage > 2 && (
+            <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)", padding: "0 0.25rem" }}>…</span>
+          )}
+        </>
       )}
 
       {pages.map((page) => (
         <Link
           key={page}
           href={buildHref(page)}
-          className={`px-3 py-2 text-sm rounded-lg ${
-            page === currentPage
-              ? "bg-blue-600 text-white font-medium"
-              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          }`}
+          className={`page-btn${page === currentPage ? " active" : ""}`}
         >
           {page}
         </Link>
       ))}
 
+      {endPage < totalPages && (
+        <>
+          {endPage < totalPages - 1 && (
+            <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)", padding: "0 0.25rem" }}>…</span>
+          )}
+          <Link href={buildHref(totalPages)} className="page-btn">{totalPages}</Link>
+        </>
+      )}
+
       {currentPage < totalPages && (
-        <Link
-          href={buildHref(currentPage + 1)}
-          className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-        >
-          다음 ›
+        <Link href={buildHref(currentPage + 1)} className="page-btn">
+          ›
         </Link>
       )}
     </nav>

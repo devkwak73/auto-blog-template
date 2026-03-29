@@ -6,48 +6,61 @@ interface PostCardProps {
   posts: Partial<Post>[];
 }
 
-const categoryLabels: Record<string, string> = {
+const catLabels: Record<string, string> = {
   before: "입찰준비",
   bidding: "입찰·낙찰",
-  after: "명도·출구",
-  tax: "세금·대출",
-  law: "권리분석",
-  ai: "AI활용",
+  after:   "명도·출구",
+  tax:     "세금·대출",
+  law:     "권리분석",
+  ai:      "AI활용",
 };
 
-const categoryColors: Record<string, string> = {
-  before: "bg-sky-100 text-sky-700",
-  bidding: "bg-orange-100 text-orange-700",
-  after: "bg-teal-100 text-teal-700",
-  tax: "bg-green-100 text-green-700",
-  law: "bg-purple-100 text-purple-700",
-  ai: "bg-blue-100 text-blue-700",
+const catBadgeClass: Record<string, string> = {
+  before: "badge badge-before",
+  bidding: "badge badge-bidding",
+  after:   "badge badge-after",
+  tax:     "badge badge-tax",
+  law:     "badge badge-law",
+  ai:      "badge badge-ai",
 };
 
-function getLevelBadge(slug?: string): { label: string; color: string } | null {
+// Top border accent per category
+const catAccent: Record<string, string> = {
+  before: "var(--cat-before-c)",
+  bidding: "var(--cat-bidding-c)",
+  after:   "var(--cat-after-c)",
+  tax:     "var(--cat-tax-c)",
+  law:     "var(--cat-law-c)",
+  ai:      "var(--cat-ai-c)",
+};
+
+function getLevelBadge(slug?: string): { cls: string; label: string } | null {
   if (!slug) return null;
-  if (slug.startsWith("basic-")) return { label: "기초", color: "bg-emerald-100 text-emerald-700" };
-  if (slug.startsWith("mid-")) return { label: "중급", color: "bg-amber-100 text-amber-700" };
-  if (slug.startsWith("adv-")) return { label: "고급", color: "bg-red-100 text-red-700" };
+  if (slug.startsWith("basic-")) return { cls: "badge badge-basic", label: "기초" };
+  if (slug.startsWith("mid-"))   return { cls: "badge badge-mid",   label: "중급" };
+  if (slug.startsWith("adv-"))   return { cls: "badge badge-adv",   label: "고급" };
   return null;
 }
 
 export default function PostCard({ posts }: PostCardProps) {
   if (posts.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        <p className="text-lg">아직 게시된 글이 없습니다.</p>
+      <div style={{ textAlign: "center", padding: "5rem 1rem", color: "var(--ink-muted)" }}>
+        <p>아직 게시된 글이 없습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+      gap: "1rem",
+    }}>
       {posts.map((post) => {
-        const category = post.category || "before";
-        const colorClass = categoryColors[category] || "bg-gray-100 text-gray-600";
-        const labelText = categoryLabels[category] || category;
+        const cat = post.category || "before";
         const level = getLevelBadge(post.slug);
+        const accent = catAccent[cat] || "var(--accent)";
         const publishedDate = post.published_at
           ? new Date(post.published_at).toLocaleDateString("ko-KR")
           : "";
@@ -56,10 +69,11 @@ export default function PostCard({ posts }: PostCardProps) {
           <Link
             key={post.id}
             href={`/posts/${post.slug}`}
-            className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
+            className="post-card"
+            style={{ borderTop: `3px solid ${accent}` }}
           >
             {post.thumbnail_url ? (
-              <div className="relative w-full h-44 bg-gray-100">
+              <div className="post-card-thumb">
                 <Image
                   src={post.thumbnail_url}
                   alt={post.title || ""}
@@ -69,31 +83,39 @@ export default function PostCard({ posts }: PostCardProps) {
                 />
               </div>
             ) : (
-              <div className="w-full h-44 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                <span className="text-3xl">📰</span>
+              <div className="post-card-placeholder">
+                <span style={{ fontSize: "2rem", opacity: 0.4 }}>🏛</span>
               </div>
             )}
 
-            <div className="p-4 flex flex-col flex-1">
-              <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colorClass}`}>
-                  {labelText}
-                </span>
-                {level && (
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${level.color}`}>
-                    {level.label}
-                  </span>
-                )}
+            <div className="post-card-body">
+              <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.6rem", flexWrap: "wrap" }}>
+                <span className={catBadgeClass[cat] || "badge"}>{catLabels[cat] || cat}</span>
+                {level && <span className={level.cls}>{level.label}</span>}
               </div>
-              <h2 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2 flex-1">
-                {post.title}
-              </h2>
+
+              <h2 className="post-card-title">{post.title}</h2>
+
               {post.meta_description && (
-                <p className="text-xs text-gray-500 line-clamp-2 mb-3">
+                <p style={{
+                  fontSize: "0.75rem",
+                  color: "var(--ink-muted)",
+                  lineHeight: 1.6,
+                  marginBottom: "0.75rem",
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 2,
+                  overflow: "hidden",
+                }}>
                   {post.meta_description}
                 </p>
               )}
-              <div className="flex justify-between text-xs text-gray-400 mt-auto">
+
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                fontSize: "0.6875rem", color: "var(--ink-faint)", marginTop: "auto",
+                paddingTop: "0.5rem", borderTop: "1px solid var(--border-light)",
+              }}>
                 {publishedDate && <span>{publishedDate}</span>}
                 <span>조회 {(post.view_count || 0).toLocaleString()}</span>
               </div>

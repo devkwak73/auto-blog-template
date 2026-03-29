@@ -9,12 +9,9 @@ import LikeButton from "@/components/LikeButton";
 import ShareButton from "@/components/ShareButton";
 import Link from "next/link";
 
-// ISR: 1시간마다 재생성
 export const revalidate = 3600;
 
-type Props = {
-  params: Promise<{ slug: string }>;
-};
+type Props = { params: Promise<{ slug: string }> };
 
 async function getPost(slug: string): Promise<Post | null> {
   const [rows] = await pool.query<RowDataPacket[]>(
@@ -43,11 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  if (!post) {
-    return { title: "글을 찾을 수 없습니다" };
-  }
-
+  if (!post) return { title: "글을 찾을 수 없습니다" };
   return {
     title: post.title,
     description: post.meta_description || post.title,
@@ -70,104 +63,175 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const catLabels: Record<string, string> = {
+  before:  "입찰준비",
+  bidding: "입찰·낙찰",
+  after:   "명도·출구",
+  tax:     "세금·대출",
+  law:     "권리분석",
+  ai:      "AI활용",
+};
+const catBadgeClass: Record<string, string> = {
+  before: "badge badge-before",
+  bidding: "badge badge-bidding",
+  after:   "badge badge-after",
+  tax:     "badge badge-tax",
+  law:     "badge badge-law",
+  ai:      "badge badge-ai",
+};
+
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPost(slug);
+  if (!post) notFound();
 
-  if (!post) {
-    notFound();
-  }
-
-  // 조회수 증가 (서버 컴포넌트에서 직접 처리)
   await pool.query("UPDATE posts SET view_count = view_count + 1 WHERE id = ?", [post.id]);
-
   const likeCount = await getLikeCount(post.id);
 
   const publishedDate = post.published_at
     ? new Date(post.published_at).toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+        year: "numeric", month: "long", day: "numeric",
       })
     : null;
-
-  const categoryLabels: Record<string, string> = {
-    before: "입찰준비",
-    bidding: "입찰·낙찰",
-    after: "명도·출구",
-    tax: "세금·대출",
-    law: "권리분석",
-    ai: "AI활용",
-  };
 
   const levelLabel = post.slug?.startsWith("basic-") ? "기초"
     : post.slug?.startsWith("mid-") ? "중급"
     : post.slug?.startsWith("adv-") ? "고급"
     : null;
+  const levelCls = levelLabel === "기초" ? "badge badge-basic"
+    : levelLabel === "중급" ? "badge badge-mid"
+    : "badge badge-adv";
 
   return (
     <>
       <JsonLd post={post} />
-      <div className="min-h-screen bg-gray-50">
-        {/* 헤더 */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="text-blue-600 hover:text-blue-800 font-semibold text-lg">
+      <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+
+        {/* ── 상단 내비 ─────────────────────────── */}
+        <header style={{
+          background: "var(--header-bg)",
+          borderBottom: "1px solid #2a2a28",
+        }}>
+          <div style={{
+            maxWidth: "52rem", margin: "0 auto",
+            padding: "0.875rem 1.5rem",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <Link href="/" style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "1rem",
+              fontWeight: 700,
+              color: "var(--header-text)",
+              textDecoration: "none",
+              letterSpacing: "-0.01em",
+            }}>
               부놈의 경매이야기
+            </Link>
+            <Link href="/" style={{
+              fontSize: "0.75rem",
+              color: "var(--header-muted)",
+              textDecoration: "none",
+              display: "flex", alignItems: "center", gap: "0.3rem",
+            }}>
+              ← 목록으로
             </Link>
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-8">
-          {/* 글 헤더 */}
-          <article className="bg-white rounded-xl shadow-sm p-6 md:p-10 mb-8">
-            <div className="mb-4 flex items-center gap-3 text-sm text-gray-500">
-              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                {categoryLabels[post.category] || post.category}
+        <main style={{ maxWidth: "52rem", margin: "0 auto", padding: "0 1.5rem" }}>
+
+          {/* ── 아티클 ─────────────────────────── */}
+          <article style={{
+            background: "var(--bg-card)",
+            borderRadius: "0 0 16px 16px",
+            border: "1px solid var(--border)",
+            borderTop: "none",
+            padding: "2.5rem 2.5rem 3rem",
+            marginBottom: "2rem",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          }}>
+
+            {/* 메타 */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.4rem",
+              marginBottom: "1.25rem", flexWrap: "wrap",
+            }}>
+              <span className={catBadgeClass[post.category] || "badge"}>
+                {catLabels[post.category] || post.category}
               </span>
               {levelLabel && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  levelLabel === "기초" ? "bg-emerald-100 text-emerald-700"
-                  : levelLabel === "중급" ? "bg-amber-100 text-amber-700"
-                  : "bg-red-100 text-red-700"
-                }`}>
-                  {levelLabel}
+                <span className={levelCls}>{levelLabel}</span>
+              )}
+              {publishedDate && (
+                <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)", marginLeft: "0.25rem" }}>
+                  {publishedDate}
                 </span>
               )}
-              {publishedDate && <span>{publishedDate}</span>}
-              <span>조회 {post.view_count.toLocaleString()}</span>
+              <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)" }}>
+                · 조회 {post.view_count.toLocaleString()}
+              </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight">
+            {/* 제목 */}
+            <h1 style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(1.5rem, 3.5vw, 2rem)",
+              fontWeight: 800,
+              lineHeight: 1.35,
+              letterSpacing: "-0.01em",
+              color: "var(--ink)",
+              marginBottom: "2rem",
+            }}>
               {post.title}
             </h1>
 
+            {/* 구분선 */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.75rem",
+              marginBottom: "2rem",
+            }}>
+              <div style={{ width: "2.5rem", height: "3px", background: "var(--accent)", borderRadius: "2px" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)", fontWeight: 600, letterSpacing: "0.05em" }}>
+                부놈
+              </span>
+            </div>
+
+            {/* 썸네일 */}
             {post.thumbnail_url && (
-              <div className="mb-6 rounded-lg overflow-hidden">
+              <div style={{
+                marginBottom: "2.5rem", borderRadius: "10px", overflow: "hidden",
+                border: "1px solid var(--border)",
+              }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={post.thumbnail_url}
                   alt={post.title}
-                  className="w-full h-auto max-h-96 object-cover"
+                  style={{ width: "100%", height: "auto", maxHeight: "24rem", objectFit: "cover", display: "block" }}
                 />
               </div>
             )}
 
-            {/* 글 본문 */}
+            {/* 본문 */}
             <div
-              className="prose prose-gray max-w-none"
+              className="prose"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
             {/* 좋아요 & 공유 */}
-            <div className="mt-8 pt-6 border-t border-gray-200 flex items-center gap-4">
+            <div style={{
+              marginTop: "2.5rem",
+              paddingTop: "1.5rem",
+              borderTop: "1px solid var(--border)",
+              display: "flex", alignItems: "center", gap: "0.75rem",
+            }}>
               <LikeButton postId={post.id} initialCount={likeCount} />
               <ShareButton title={post.title} />
             </div>
           </article>
 
-          {/* 댓글 섹션 */}
+          {/* ── 댓글 ────────────────────────────── */}
           <CommentSection postId={post.id} />
+          <div style={{ height: "3rem" }} />
         </main>
       </div>
     </>
