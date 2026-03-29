@@ -6,7 +6,7 @@ interface JsonLdProps {
 
 export default function JsonLd({ post }: JsonLdProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "경매AI블로그";
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기";
 
   const schema = {
     "@context": "https://schema.org",
@@ -16,8 +16,8 @@ export default function JsonLd({ post }: JsonLdProps) {
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at,
     author: {
-      "@type": "Organization",
-      name: siteName,
+      "@type": "Person",
+      name: "부놈",
       url: siteUrl,
     },
     publisher: {

@@ -57,9 +57,9 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                {process.env.NEXT_PUBLIC_SITE_NAME || "경매AI블로그"}
+                {process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기"}
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">부동산 경매 × AI 도구 활용</p>
+              <p className="text-sm text-gray-500 mt-0.5">AI로 더 쉽게, 더 스마트하게</p>
             </div>
           </div>
         </div>

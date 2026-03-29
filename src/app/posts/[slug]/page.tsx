@@ -107,7 +107,7 @@ export default async function PostPage({ params }: Props) {
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="text-blue-600 hover:text-blue-800 font-semibold text-lg">
-              경매AI블로그
+              부놈의 경매이야기
             </Link>
           </div>
         </header>

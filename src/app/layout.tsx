@@ -8,7 +8,7 @@ const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
 });
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "경매AI블로그";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
     default: siteName,
   },
-  description: "부동산 경매와 AI 도구 활용법을 다루는 블로그",
+  description: "AI로 더 쉽게, 더 스마트하게 — 부동산 경매 기초부터 실전까지",
   openGraph: {
     type: "website",
     siteName,

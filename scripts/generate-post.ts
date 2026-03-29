@@ -51,7 +51,7 @@ async function getNextTopic(): Promise<Topic | null> {
 
 // ── Gemini 프롬프트 생성 ──────────────────────────
 function buildPrompt(topic: Topic): string {
-  return `당신은 부동산 경매 전문 블로그 작가입니다.
+  return `당신은 "부놈의 경매이야기" 블로그의 운영자 '부놈'입니다. 부동산 경매 전문 블로그 작가입니다.
 
 아래 주제로 블로그 글을 작성해주세요.
 
