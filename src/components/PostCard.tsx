@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Post } from "@/types";
 import PostShareButton from "./PostShareButton";
+import AdBanner from "./AdBanner";
 
 interface PostCardProps {
   posts: Partial<Post>[];
@@ -43,6 +44,16 @@ function getLevelBadge(slug?: string): { cls: string; label: string } | null {
   return null;
 }
 
+const CHUNK_SIZE = 6;
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 export default function PostCard({ posts }: PostCardProps) {
   if (posts.length === 0) {
     return (
@@ -52,78 +63,93 @@ export default function PostCard({ posts }: PostCardProps) {
     );
   }
 
+  const adSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_LIST || "";
+  const chunks = chunkArray(posts, CHUNK_SIZE);
+  const gridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+    gap: "1rem",
+  };
+
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-      gap: "1rem",
-    }}>
-      {posts.map((post) => {
-        const cat = post.category || "before";
-        const level = getLevelBadge(post.slug);
-        const accent = catAccent[cat] || "var(--accent)";
-        const publishedDate = post.published_at
-          ? new Date(post.published_at).toLocaleDateString("ko-KR")
-          : "";
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      {chunks.map((chunk, chunkIndex) => (
+        <div key={chunkIndex}>
+          <div style={gridStyle}>
+            {chunk.map((post) => {
+              const cat = post.category || "before";
+              const level = getLevelBadge(post.slug);
+              const accent = catAccent[cat] || "var(--accent)";
+              const publishedDate = post.published_at
+                ? new Date(post.published_at).toLocaleDateString("ko-KR")
+                : "";
 
-        return (
-          <Link
-            key={post.id}
-            href={`/posts/${post.slug}`}
-            className="post-card"
-            style={{ borderTop: `3px solid ${accent}` }}
-          >
-            {post.thumbnail_url ? (
-              <div className="post-card-thumb">
-                <Image
-                  src={post.thumbnail_url}
-                  alt={post.title || ""}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-              </div>
-            ) : (
-              <div className="post-card-placeholder">
-                <span style={{ fontSize: "2rem", opacity: 0.4 }}>🏛</span>
-              </div>
-            )}
+              return (
+                <Link
+                  key={post.id}
+                  href={`/posts/${post.slug}`}
+                  className="post-card"
+                  style={{ borderTop: `3px solid ${accent}` }}
+                >
+                  {post.thumbnail_url ? (
+                    <div className="post-card-thumb">
+                      <Image
+                        src={post.thumbnail_url}
+                        alt={post.title || ""}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                  ) : (
+                    <div className="post-card-placeholder">
+                      <span style={{ fontSize: "2rem", opacity: 0.4 }}>🏛</span>
+                    </div>
+                  )}
 
-            <div className="post-card-body">
-              <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.6rem", flexWrap: "wrap" }}>
-                <span className={catBadgeClass[cat] || "badge"}>{catLabels[cat] || cat}</span>
-                {level && <span className={level.cls}>{level.label}</span>}
-              </div>
+                  <div className="post-card-body">
+                    <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.6rem", flexWrap: "wrap" }}>
+                      <span className={catBadgeClass[cat] || "badge"}>{catLabels[cat] || cat}</span>
+                      {level && <span className={level.cls}>{level.label}</span>}
+                    </div>
 
-              <h2 className="post-card-title">{post.title}</h2>
+                    <h2 className="post-card-title">{post.title}</h2>
 
-              {post.meta_description && (
-                <p style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink-muted)",
-                  lineHeight: 1.6,
-                  marginBottom: "0.75rem",
-                  display: "-webkit-box",
-                  WebkitBoxOrient: "vertical",
-                  WebkitLineClamp: 2,
-                  overflow: "hidden",
-                }}>
-                  {post.meta_description}
-                </p>
-              )}
+                    {post.meta_description && (
+                      <p style={{
+                        fontSize: "0.75rem",
+                        color: "var(--ink-muted)",
+                        lineHeight: 1.6,
+                        marginBottom: "0.75rem",
+                        display: "-webkit-box",
+                        WebkitBoxOrient: "vertical",
+                        WebkitLineClamp: 2,
+                        overflow: "hidden",
+                      }}>
+                        {post.meta_description}
+                      </p>
+                    )}
 
-              <div style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                fontSize: "0.6875rem", color: "var(--ink-faint)", marginTop: "auto",
-                paddingTop: "0.5rem", borderTop: "1px solid var(--border-light)",
-              }}>
-                <span>{publishedDate || ""} · 조회 {(post.view_count || 0).toLocaleString()}</span>
-                <PostShareButton slug={post.slug || ""} title={post.title || ""} />
-              </div>
+                    <div style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      fontSize: "0.6875rem", color: "var(--ink-faint)", marginTop: "auto",
+                      paddingTop: "0.5rem", borderTop: "1px solid var(--border-light)",
+                    }}>
+                      <span>{publishedDate || ""} · 조회 {(post.view_count || 0).toLocaleString()}</span>
+                      <PostShareButton slug={post.slug || ""} title={post.title || ""} />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          {chunkIndex < chunks.length - 1 && (
+            <div style={{ marginTop: "1rem" }}>
+              <AdBanner slot={adSlot} format="horizontal" />
             </div>
-          </Link>
-        );
-      })}
+          )}
+        </div>
+      ))}
     </div>
   );
 }

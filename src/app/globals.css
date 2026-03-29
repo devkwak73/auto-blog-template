@@ -367,3 +367,104 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Wing Banner ────────────────────────────────── */
+.wing-banner {
+  position: fixed;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  z-index: 30;
+  width: 9.5rem;
+}
+
+@media (max-width: 1399px) {
+  .wing-banner { display: none; }
+}
+
+.wing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.125rem 0.875rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.18s, box-shadow 0.18s;
+  gap: 0.4rem;
+}
+
+.wing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+
+.wing-card--dark {
+  background: var(--header-bg);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.wing-card--light {
+  background: var(--accent-faint);
+  border: 1px solid var(--border);
+}
+
+.wing-card__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-bottom: 0.15rem;
+}
+
+.wing-card__title {
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.wing-card--dark  .wing-card__title { color: var(--header-text); }
+.wing-card--light .wing-card__title { color: var(--ink); }
+
+.wing-card__divider {
+  width: 1.5rem;
+  height: 1.5px;
+  border-radius: 2px;
+  margin: 0.1rem 0;
+}
+
+.wing-card--dark  .wing-card__divider { background: rgba(255,255,255,0.2); }
+.wing-card--light .wing-card__divider { background: var(--accent); opacity: 0.4; }
+
+.wing-card__desc {
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+
+.wing-card--dark  .wing-card__desc { color: var(--header-muted); }
+.wing-card--light .wing-card__desc { color: var(--ink-muted); }
+
+.wing-card__cta {
+  margin-top: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.3em 0.85em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ── Ad slot in feed ────────────────────────────── */
+.feed-ad-slot {
+  padding: 1.25rem 2.5rem;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg);
+}
+
+@media (min-width: 768px) {
+  .feed-ad-slot { padding: 1.25rem 3rem; }
+}

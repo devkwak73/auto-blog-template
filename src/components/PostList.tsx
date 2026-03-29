@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Post } from "@/types";
 import PostShareButton from "./PostShareButton";
+import AdBanner from "./AdBanner";
 
 interface PostListProps {
   posts: Partial<Post>[];
@@ -42,9 +43,11 @@ export default function PostList({ posts }: PostListProps) {
     );
   }
 
+  const adSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_LIST || "";
+
   return (
     <div>
-      {posts.map((post) => {
+      {posts.map((post, index) => {
         const cat = post.category || "before";
         const level = getLevelBadge(post.slug);
         const publishedDate = post.published_at
@@ -54,7 +57,8 @@ export default function PostList({ posts }: PostListProps) {
           : "";
 
         return (
-          <article key={post.id} className="feed-article">
+          <div key={post.id}>
+          <article className="feed-article">
 
             {/* 메타 */}
             <div style={{
@@ -122,6 +126,12 @@ export default function PostList({ posts }: PostListProps) {
               <PostShareButton slug={post.slug || ""} title={post.title || ""} />
             </div>
           </article>
+          {index % 3 === 2 && index < posts.length - 1 && (
+            <div className="feed-ad-slot">
+              <AdBanner slot={adSlot} format="horizontal" />
+            </div>
+          )}
+          </div>
         );
       })}
     </div>

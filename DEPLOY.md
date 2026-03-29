@@ -17,7 +17,6 @@
 도메인 관리 페이지에서 A 레코드 확인:
 ```
 blog.easyhelper.kr  →  133.186.144.41
-www.blog.easyhelper.kr  →  133.186.144.41
 ```
 
 ### 2. 서버 접속
@@ -54,17 +53,26 @@ sudo bash /var/www/auction-blog/scripts/setup-server.sh
 - PM2 등록 + 부팅 자동 시작
 - 크론탭 등록 (평일 오전 9시 자동 글 발행)
 
-### 6. API 키 입력
-스크립트 완료 후 아래 두 가지 키를 직접 입력:
+### 6. API 키 및 설정 입력
+스크립트 완료 후 아래 항목을 직접 입력:
 ```bash
 nano /var/www/auction-blog/.env.local
 ```
 
 변경할 항목:
 ```
+# 필수
 GEMINI_API_KEY=실제_Gemini_API_키
 NEXT_PUBLIC_HCAPTCHA_SITE_KEY=실제_hCaptcha_사이트_키
 HCAPTCHA_SECRET_KEY=실제_hCaptcha_시크릿_키
+
+# 자동 설정됨 (확인만)
+NEXT_PUBLIC_CONTACT_EMAIL=dev.kwak73@gmail.com
+NEXT_PUBLIC_GA_ID=G-LQC7MLGKJV
+
+# AdSense 승인 후 주석 해제
+# NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
+# NEXT_PUBLIC_ADSENSE_SLOT_LIST=1234567890
 ```
 
 ### 7. 키 입력 후 재빌드 & 재시작
@@ -115,7 +123,7 @@ certbot renew --dry-run
 
 ## 자동 글 발행 스케줄
 
-- **주기**: 평일(월~금) 오전 9시
+- **주기**: 평일(월~금) 오전 7시
 - **분량**: 130개 주제 순서대로 1일 1개
 - **기간**: 약 6개월 (기초 43편 → 중급 43편 → 고급 44편)
 - **로그**: `/var/www/auction-blog/scripts/generate.log`
