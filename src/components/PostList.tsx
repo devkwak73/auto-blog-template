@@ -111,17 +111,7 @@ export default function PostList({ posts }: PostListProps) {
               paddingTop: "1.25rem",
               borderTop: "1px solid var(--border-light)",
             }}>
-              <Link
-                href={`/posts/${post.slug}`}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: "0.4rem",
-                  fontSize: "0.8125rem", fontWeight: 600,
-                  color: "var(--accent)", textDecoration: "none",
-                  transition: "opacity 0.15s",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
-                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-              >
+              <Link href={`/posts/${post.slug}`} className="feed-more-link">
                 댓글 · 좋아요 보기 →
               </Link>
             </div>
