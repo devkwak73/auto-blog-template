@@ -92,12 +92,18 @@ export default async function PostPage({ params }: Props) {
     : null;
 
   const categoryLabels: Record<string, string> = {
-    general: "일반",
-    auction: "경매",
-    ai: "AI 도구",
-    invest: "투자",
-    law: "법률",
+    before: "입찰준비",
+    bidding: "입찰·낙찰",
+    after: "명도·출구",
+    tax: "세금·대출",
+    law: "권리분석",
+    ai: "AI활용",
   };
+
+  const levelLabel = post.slug?.startsWith("basic-") ? "기초"
+    : post.slug?.startsWith("mid-") ? "중급"
+    : post.slug?.startsWith("adv-") ? "고급"
+    : null;
 
   return (
     <>
@@ -119,6 +125,15 @@ export default async function PostPage({ params }: Props) {
               <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
                 {categoryLabels[post.category] || post.category}
               </span>
+              {levelLabel && (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  levelLabel === "기초" ? "bg-emerald-100 text-emerald-700"
+                  : levelLabel === "중급" ? "bg-amber-100 text-amber-700"
+                  : "bg-red-100 text-red-700"
+                }`}>
+                  {levelLabel}
+                </span>
+              )}
               {publishedDate && <span>{publishedDate}</span>}
               <span>조회 {post.view_count.toLocaleString()}</span>
             </div>

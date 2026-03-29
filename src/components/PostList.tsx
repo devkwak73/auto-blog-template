@@ -7,20 +7,30 @@ interface PostListProps {
 }
 
 const categoryLabels: Record<string, string> = {
-  general: "일반",
-  auction: "경매",
-  ai: "AI 도구",
-  invest: "투자",
-  law: "법률",
+  before: "입찰준비",
+  bidding: "입찰·낙찰",
+  after: "명도·출구",
+  tax: "세금·대출",
+  law: "권리분석",
+  ai: "AI활용",
 };
 
 const categoryColors: Record<string, string> = {
-  general: "bg-gray-100 text-gray-600",
-  auction: "bg-orange-100 text-orange-700",
-  ai: "bg-blue-100 text-blue-700",
-  invest: "bg-green-100 text-green-700",
+  before: "bg-sky-100 text-sky-700",
+  bidding: "bg-orange-100 text-orange-700",
+  after: "bg-teal-100 text-teal-700",
+  tax: "bg-green-100 text-green-700",
   law: "bg-purple-100 text-purple-700",
+  ai: "bg-blue-100 text-blue-700",
 };
+
+function getLevelBadge(slug?: string): { label: string; color: string } | null {
+  if (!slug) return null;
+  if (slug.startsWith("basic-")) return { label: "기초", color: "bg-emerald-100 text-emerald-700" };
+  if (slug.startsWith("mid-")) return { label: "중급", color: "bg-amber-100 text-amber-700" };
+  if (slug.startsWith("adv-")) return { label: "고급", color: "bg-red-100 text-red-700" };
+  return null;
+}
 
 export default function PostList({ posts }: PostListProps) {
   if (posts.length === 0) {
@@ -34,9 +44,10 @@ export default function PostList({ posts }: PostListProps) {
   return (
     <div className="space-y-0">
       {posts.map((post, index) => {
-        const category = post.category || "general";
-        const colorClass = categoryColors[category] || categoryColors.general;
+        const category = post.category || "before";
+        const colorClass = categoryColors[category] || "bg-gray-100 text-gray-600";
         const labelText = categoryLabels[category] || category;
+        const level = getLevelBadge(post.slug);
         const publishedDate = post.published_at
           ? new Date(post.published_at).toLocaleDateString("ko-KR", {
               year: "numeric",
@@ -53,10 +64,15 @@ export default function PostList({ posts }: PostListProps) {
             }`}
           >
             {/* 메타 정보 */}
-            <div className="flex items-center gap-3 text-sm text-gray-400 mb-3">
+            <div className="flex items-center gap-2 text-sm text-gray-400 mb-3 flex-wrap">
               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${colorClass}`}>
                 {labelText}
               </span>
+              {level && (
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${level.color}`}>
+                  {level.label}
+                </span>
+              )}
               {publishedDate && <span>{publishedDate}</span>}
               <span>조회 {(post.view_count || 0).toLocaleString()}</span>
             </div>

@@ -9,11 +9,12 @@ import Pagination from "@/components/Pagination";
 const LIMIT = 10;
 
 const categoryLabels: Record<string, string> = {
-  general: "일반",
-  auction: "경매",
-  ai: "AI 도구",
-  invest: "투자",
-  law: "법률",
+  before: "입찰준비",
+  bidding: "입찰·낙찰",
+  after: "명도·출구",
+  tax: "세금·대출",
+  law: "권리분석",
+  ai: "AI활용",
 };
 
 type SearchParams = Promise<{

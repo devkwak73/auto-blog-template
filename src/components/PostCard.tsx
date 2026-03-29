@@ -7,20 +7,30 @@ interface PostCardProps {
 }
 
 const categoryLabels: Record<string, string> = {
-  general: "일반",
-  auction: "경매",
-  ai: "AI 도구",
-  invest: "투자",
-  law: "법률",
+  before: "입찰준비",
+  bidding: "입찰·낙찰",
+  after: "명도·출구",
+  tax: "세금·대출",
+  law: "권리분석",
+  ai: "AI활용",
 };
 
 const categoryColors: Record<string, string> = {
-  general: "bg-gray-100 text-gray-600",
-  auction: "bg-orange-100 text-orange-700",
-  ai: "bg-blue-100 text-blue-700",
-  invest: "bg-green-100 text-green-700",
+  before: "bg-sky-100 text-sky-700",
+  bidding: "bg-orange-100 text-orange-700",
+  after: "bg-teal-100 text-teal-700",
+  tax: "bg-green-100 text-green-700",
   law: "bg-purple-100 text-purple-700",
+  ai: "bg-blue-100 text-blue-700",
 };
+
+function getLevelBadge(slug?: string): { label: string; color: string } | null {
+  if (!slug) return null;
+  if (slug.startsWith("basic-")) return { label: "기초", color: "bg-emerald-100 text-emerald-700" };
+  if (slug.startsWith("mid-")) return { label: "중급", color: "bg-amber-100 text-amber-700" };
+  if (slug.startsWith("adv-")) return { label: "고급", color: "bg-red-100 text-red-700" };
+  return null;
+}
 
 export default function PostCard({ posts }: PostCardProps) {
   if (posts.length === 0) {
@@ -34,9 +44,10 @@ export default function PostCard({ posts }: PostCardProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {posts.map((post) => {
-        const category = post.category || "general";
-        const colorClass = categoryColors[category] || categoryColors.general;
+        const category = post.category || "before";
+        const colorClass = categoryColors[category] || "bg-gray-100 text-gray-600";
         const labelText = categoryLabels[category] || category;
+        const level = getLevelBadge(post.slug);
         const publishedDate = post.published_at
           ? new Date(post.published_at).toLocaleDateString("ko-KR")
           : "";
@@ -64,10 +75,15 @@ export default function PostCard({ posts }: PostCardProps) {
             )}
 
             <div className="p-4 flex flex-col flex-1">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colorClass}`}>
                   {labelText}
                 </span>
+                {level && (
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${level.color}`}>
+                    {level.label}
+                  </span>
+                )}
               </div>
               <h2 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2 flex-1">
                 {post.title}
