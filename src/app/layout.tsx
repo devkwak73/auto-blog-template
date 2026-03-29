@@ -14,6 +14,9 @@ const notoSansKR = Noto_Sans_KR({
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION;
+const naverVerification = process.env.NEXT_PUBLIC_NAVER_VERIFICATION;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -29,6 +32,16 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  ...(googleVerification || naverVerification
+    ? {
+        verification: {
+          ...(googleVerification ? { google: googleVerification } : {}),
+          ...(naverVerification
+            ? { other: { "naver-site-verification": naverVerification } }
+            : {}),
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({

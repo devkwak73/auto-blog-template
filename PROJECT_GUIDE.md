@@ -18,6 +18,7 @@
 10. [콘텐츠 자동 생성 시스템](#10-콘텐츠-자동-생성-시스템)
 11. [관련 서비스 링크](#11-관련-서비스-링크)
 12. [남은 작업 목록](#12-남은-작업-목록)
+13. [검색엔진 등록 가이드](#13-검색엔진-등록-가이드)
 
 ---
 
@@ -210,6 +211,10 @@ NEXT_PUBLIC_GA_ID=G-LQC7MLGKJV           # ✅ 설정 완료
 # NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX   # 승인 후 주석 해제
 # NEXT_PUBLIC_ADSENSE_SLOT_LIST=1234567890             # 광고 슬롯 ID
 
+# ── 검색엔진 인증 ──
+# NEXT_PUBLIC_GOOGLE_VERIFICATION=구글서치콘솔_인증코드   # Google Search Console 인증 (없으면 meta 태그 미출력)
+# NEXT_PUBLIC_NAVER_VERIFICATION=네이버서치어드바이저_코드  # 네이버 서치어드바이저 인증 (없으면 meta 태그 미출력)
+
 # ── hCaptcha ──
 NEXT_PUBLIC_HCAPTCHA_SITE_KEY=사이트키    # 개발: 10000000-ffff-ffff-ffff-000000000001
 HCAPTCHA_SECRET_KEY=시크릿키             # 개발: 0x0000...0000
@@ -236,6 +241,8 @@ GEMINI_API_KEY=실제_API_키              # ✅ 발급 완료 (로컬에만 있
 | GEMINI_API_KEY | ✅ | 🔧 수동 입력 필요 | `AIzaSy...` |
 | NEXT_PUBLIC_HCAPTCHA_SITE_KEY | 테스트키 | 🔧 실키 입력 필요 | hcaptcha.com |
 | ADMIN_API_KEY | dev키 | ✅ 자동생성 | 랜덤 32자 |
+| NEXT_PUBLIC_GOOGLE_VERIFICATION | ❌ 미설정 | ❌ 미설정 | Google Search Console 인증 후 |
+| NEXT_PUBLIC_NAVER_VERIFICATION | ❌ 미설정 | ❌ 미설정 | 네이버 서치어드바이저 인증 후 |
 
 ---
 
@@ -493,5 +500,95 @@ cd /var/www/auction-blog && npm run generate
 - [ ] hCaptcha 실제 키로 교체 (현재 개발용 테스트 키)
 - [ ] 썸네일 이미지 자동 생성 추가 (현재 없음)
 - [ ] 글 상세 페이지 내 광고 슬롯 추가 (본문 중간 or 하단)
-- [ ] 사이트맵 자동 생성 (`/sitemap.xml`)
-- [ ] robots.txt 확인/추가
+- ✅ 사이트맵 자동 생성 (`/sitemap.xml`) — `src/app/sitemap.ts` 구현 완료
+- ✅ robots.txt 확인/추가 — `src/app/robots.ts` 구현 완료
+- [ ] Google Search Console에 사이트 등록 + sitemap 제출 → `NEXT_PUBLIC_GOOGLE_VERIFICATION` 환경변수 설정
+- [ ] 네이버 서치어드바이저에 사이트 등록 + sitemap 제출 → `NEXT_PUBLIC_NAVER_VERIFICATION` 환경변수 설정
+
+---
+
+## 13. 검색엔진 등록 가이드
+
+### SEO 구현 현황
+
+| 항목 | 구현 위치 | 상태 |
+|------|-----------|------|
+| robots.txt | `src/app/robots.ts` (동적 생성) | ✅ 완료 |
+| sitemap.xml | `src/app/sitemap.ts` (동적 생성) | ✅ 완료 |
+| JSON-LD (Article) | `src/components/JsonLd.tsx` | ✅ 완료 |
+| Open Graph / Twitter Card | `src/app/layout.tsx`, `posts/[slug]/page.tsx` | ✅ 완료 |
+| 보안 헤더 | `next.config.ts` | ✅ 완료 |
+| Google 인증 meta | 환경변수 `NEXT_PUBLIC_GOOGLE_VERIFICATION` | 🔧 등록 후 설정 |
+| 네이버 인증 meta | 환경변수 `NEXT_PUBLIC_NAVER_VERIFICATION` | 🔧 등록 후 설정 |
+
+sitemap에 포함된 페이지:
+- 홈 (`/`) — priority 1.0, daily
+- About (`/about`) — priority 0.5, monthly
+- Contact (`/contact`) — priority 0.5, monthly
+- Privacy (`/privacy`) — priority 0.3, monthly
+- 개별 포스트 (`/posts/[slug]`) — priority 0.8, weekly
+
+---
+
+### 13-1. Google Search Console 등록
+
+1. https://search.google.com/search-console 접속
+2. **URL 접두어** 방식으로 `https://blog.easyhelper.kr` 추가
+3. **HTML 태그** 인증 방식 선택 → `content="..."` 값 복사
+4. 서버 `.env.local`에 추가:
+   ```bash
+   NEXT_PUBLIC_GOOGLE_VERIFICATION=복사한_인증코드
+   ```
+5. 재빌드:
+   ```bash
+   npm run build && pm2 restart auction-blog
+   ```
+6. Search Console에서 **인증 확인** 클릭
+7. 좌측 메뉴 → **Sitemaps** → `https://blog.easyhelper.kr/sitemap.xml` 제출
+
+---
+
+### 13-2. 네이버 서치어드바이저 등록
+
+1. https://searchadvisor.naver.com 접속 (네이버 로그인 필요)
+2. **사이트 등록** → `https://blog.easyhelper.kr` 입력
+3. **HTML 태그** 인증 방식 선택 → `content="..."` 값 복사
+4. 서버 `.env.local`에 추가:
+   ```bash
+   NEXT_PUBLIC_NAVER_VERIFICATION=복사한_인증코드
+   ```
+5. 재빌드 + 재시작 후 서치어드바이저에서 **소유확인** 클릭
+6. 요청 → **웹 페이지 수집** → sitemap 제출:
+   ```
+   https://blog.easyhelper.kr/sitemap.xml
+   ```
+
+---
+
+### 13-3. Bing 웹마스터 도구 등록 (선택)
+
+1. https://www.bing.com/webmasters 접속
+2. **Google Search Console에서 가져오기** 기능으로 간편 등록 가능
+   - 또는 수동으로 사이트 추가 → XML 파일 인증 방식 선택
+3. sitemap 제출: `https://blog.easyhelper.kr/sitemap.xml`
+
+> Bing 웹마스터에는 별도 인증 meta 태그 불필요 (Google Search Console 연동으로 대체 가능)
+
+---
+
+### 인증 후 환경변수 설정 요약
+
+```bash
+# /var/www/auction-blog/.env.local 에 추가
+NEXT_PUBLIC_GOOGLE_VERIFICATION=구글서치콘솔_HTML태그_content_값
+NEXT_PUBLIC_NAVER_VERIFICATION=네이버서치어드바이저_HTML태그_content_값
+```
+
+재빌드:
+```bash
+cd /var/www/auction-blog
+npm run build
+pm2 restart auction-blog
+```
+
+인증코드가 설정되지 않으면 meta 태그가 HTML에 출력되지 않으므로 **등록 전에는 환경변수를 비워 두어도 됩니다.**
