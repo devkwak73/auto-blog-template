@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Post } from "@/types";
+import PostShareButton from "./PostShareButton";
 
 interface PostCardProps {
   posts: Partial<Post>[];
@@ -112,12 +113,12 @@ export default function PostCard({ posts }: PostCardProps) {
               )}
 
               <div style={{
-                display: "flex", justifyContent: "space-between",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
                 fontSize: "0.6875rem", color: "var(--ink-faint)", marginTop: "auto",
                 paddingTop: "0.5rem", borderTop: "1px solid var(--border-light)",
               }}>
-                {publishedDate && <span>{publishedDate}</span>}
-                <span>조회 {(post.view_count || 0).toLocaleString()}</span>
+                <span>{publishedDate || ""} · 조회 {(post.view_count || 0).toLocaleString()}</span>
+                <PostShareButton slug={post.slug || ""} title={post.title || ""} />
               </div>
             </div>
           </Link>

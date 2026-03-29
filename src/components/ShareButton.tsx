@@ -9,56 +9,102 @@ interface ShareButtonProps {
 export default function ShareButton({ title }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
+  const getUrl = () => window.location.href;
+
   const handleCopy = async () => {
+    const url = getUrl();
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(url);
     } catch {
-      // fallback: execCommand
-      const textArea = document.createElement("textarea");
-      textArea.value = window.location.href;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
+      const el = document.createElement("textarea");
+      el.value = url;
+      el.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(el);
+      el.select();
       document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      document.body.removeChild(el);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleKakao = () => {
-    const url = window.location.href;
-    const kakaoShareUrl = `https://story.kakao.com/share?url=${encodeURIComponent(url)}`;
-    window.open(kakaoShareUrl, "_blank", "width=550,height=450");
+    const url = `https://story.kakao.com/share?url=${encodeURIComponent(getUrl())}`;
+    window.open(url, "_blank", "width=550,height=450");
+  };
+
+  const handleTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(getUrl())}`;
+    window.open(url, "_blank", "width=550,height=450");
+  };
+
+  const btnBase: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.4rem",
+    padding: "0.5rem 1rem",
+    borderRadius: "999px",
+    border: "1.5px solid var(--border)",
+    background: "var(--bg)",
+    color: "var(--ink-muted)",
+    fontSize: "0.8125rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.15s",
+    whiteSpace: "nowrap" as const,
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+      {/* 링크 복사 */}
       <button
         onClick={handleCopy}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-          copied
-            ? "bg-green-50 border-green-200 text-green-600"
-            : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-        }`}
         aria-label="링크 복사"
+        style={{
+          ...btnBase,
+          ...(copied
+            ? { background: "#f0fdf4", borderColor: "#86efac", color: "#16a34a" }
+            : {}),
+        }}
       >
-        <span>{copied ? "✓" : "🔗"}</span>
-        <span>{copied ? "복사됨!" : "링크 복사"}</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+          <path d="M13 7H15C16.657 7 18 8.343 18 10C18 11.657 16.657 13 15 13H13M7 13H5C3.343 13 2 11.657 2 10C2 8.343 3.343 7 5 7H7M7 10H13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+        {copied ? "복사됨!" : "링크 복사"}
       </button>
 
+      {/* 카카오 공유 */}
       <button
         onClick={handleKakao}
-        className="flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-300 bg-yellow-50 text-yellow-700 text-sm font-medium hover:bg-yellow-100 transition-all"
         aria-label="카카오톡 공유"
-        title={`${title} 공유하기`}
+        style={{
+          ...btnBase,
+          background: "#FEE500",
+          borderColor: "#E6CF00",
+          color: "#3C1E1E",
+        }}
       >
-        <span>💬</span>
-        <span>카카오</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.74 1.63 5.16 4.1 6.66l-.9 3.37c-.06.24.21.43.42.3L9.8 18.8C10.5 18.93 11.24 19 12 19c5.523 0 10-3.477 10-8s-4.477-8-10-8z"/>
+        </svg>
+        카카오
+      </button>
+
+      {/* X(트위터) 공유 */}
+      <button
+        onClick={handleTwitter}
+        aria-label="X(트위터) 공유"
+        style={{
+          ...btnBase,
+          background: "#000",
+          borderColor: "#333",
+          color: "#fff",
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        X
       </button>
     </div>
   );

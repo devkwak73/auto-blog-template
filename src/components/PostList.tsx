@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Post } from "@/types";
+import PostShareButton from "./PostShareButton";
 
 interface PostListProps {
   posts: Partial<Post>[];
@@ -105,15 +106,20 @@ export default function PostList({ posts }: PostListProps) {
               />
             )}
 
-            {/* 하단 링크 */}
+            {/* 하단 */}
             <div style={{
               marginTop: "1.75rem",
               paddingTop: "1.25rem",
               borderTop: "1px solid var(--border-light)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
             }}>
               <Link href={`/posts/${post.slug}`} className="feed-more-link">
                 댓글 · 좋아요 보기 →
               </Link>
+              <PostShareButton slug={post.slug || ""} title={post.title || ""} />
             </div>
           </article>
         );

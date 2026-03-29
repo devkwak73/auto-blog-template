@@ -19,15 +19,12 @@ export default function LikeButton({ postId, initialCount }: LikeButtonProps) {
   const handleLike = async () => {
     if (loading) return;
     setLoading(true);
-
     try {
       const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setCount(data.count);
         setLiked(data.liked);
-
-        // localStorage 업데이트
         const likedPosts = JSON.parse(localStorage.getItem("liked-posts") || "[]") as number[];
         if (data.liked) {
           localStorage.setItem("liked-posts", JSON.stringify([...new Set([...likedPosts, postId])]));
@@ -35,25 +32,32 @@ export default function LikeButton({ postId, initialCount }: LikeButtonProps) {
           localStorage.setItem("liked-posts", JSON.stringify(likedPosts.filter((id: number) => id !== postId)));
         }
       }
-    } catch {
-      // 무시
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* 무시 */ }
+    finally { setLoading(false); }
   };
 
   return (
     <button
       onClick={handleLike}
       disabled={loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all text-sm font-medium ${
-        liked
-          ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
-          : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-      } disabled:opacity-50`}
       aria-label={liked ? "좋아요 취소" : "좋아요"}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.4rem",
+        padding: "0.5rem 1.125rem",
+        borderRadius: "999px",
+        border: `1.5px solid ${liked ? "#fca5a5" : "var(--border)"}`,
+        background: liked ? "#fff0f0" : "var(--bg)",
+        color: liked ? "#dc2626" : "var(--ink-muted)",
+        fontSize: "0.875rem",
+        fontWeight: 600,
+        cursor: loading ? "not-allowed" : "pointer",
+        opacity: loading ? 0.6 : 1,
+        transition: "all 0.15s",
+      }}
     >
-      <span className="text-lg">{liked ? "❤️" : "🤍"}</span>
+      <span style={{ fontSize: "1rem" }}>{liked ? "❤️" : "🤍"}</span>
       <span>{count.toLocaleString()}</span>
     </button>
   );
