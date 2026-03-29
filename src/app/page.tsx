@@ -1,64 +1,125 @@
-import Image from "next/image";
+import { Suspense } from "react";
+import pool from "@/lib/db";
+import { RowDataPacket } from "mysql2";
+import PostList from "@/components/PostList";
+import PostCard from "@/components/PostCard";
+import ViewToggle from "@/components/ViewToggle";
+import Pagination from "@/components/Pagination";
 
-export default function Home() {
+const LIMIT = 10;
+
+const categoryLabels: Record<string, string> = {
+  general: "일반",
+  auction: "경매",
+  ai: "AI 도구",
+  invest: "투자",
+  law: "법률",
+};
+
+type SearchParams = Promise<{
+  view?: string;
+  page?: string;
+  category?: string;
+}>;
+
+export default async function HomePage({ searchParams }: { searchParams: SearchParams }) {
+  const { view = "list", page = "1", category } = await searchParams;
+
+  const currentView = view === "card" ? "card" : "list";
+  const currentPage = Math.max(1, Number(page) || 1);
+  const offset = (currentPage - 1) * LIMIT;
+
+  const whereCategory = category ? " AND category = ?" : "";
+  const queryParams: (string | number)[] = category
+    ? [category, LIMIT, offset]
+    : [LIMIT, offset];
+  const countParams: string[] = category ? [category] : [];
+
+  const [[{ total }]] = await pool.query<RowDataPacket[]>(
+    `SELECT COUNT(*) as total FROM posts WHERE status = 'published'${whereCategory}`,
+    countParams
+  );
+
+  const [posts] = await pool.query<RowDataPacket[]>(
+    `SELECT id, title, slug, category, thumbnail_url, meta_description, content, published_at, view_count
+     FROM posts WHERE status = 'published'${whereCategory}
+     ORDER BY published_at DESC LIMIT ? OFFSET ?`,
+    queryParams
+  );
+
+  const totalPages = Math.ceil(total / LIMIT);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                {process.env.NEXT_PUBLIC_SITE_NAME || "경매AI블로그"}
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">부동산 경매 × AI 도구 활용</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 카테고리 필터 */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="flex gap-1.5 overflow-x-auto py-3 scrollbar-hide">
+            {([null, "auction", "ai", "invest", "law", "general"] as (string | null)[]).map((cat) => {
+              const label = cat ? (categoryLabels[cat] || cat) : "전체";
+              const isActive = (!cat && !category) || cat === category;
+              const href = cat ? `/?view=${currentView}&category=${cat}` : `/?view=${currentView}`;
+              return (
+                <a
+                  key={cat ?? "all"}
+                  href={href}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                    isActive
+                      ? "bg-blue-600 text-white"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                  }`}
+                >
+                  {label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <main className="max-w-3xl mx-auto">
+        {/* 뷰 토글 + 글 수 */}
+        <div className="flex items-center justify-between px-4 py-4">
+          <span className="text-sm text-gray-500">
+            총 <strong className="text-gray-700">{total}</strong>개의 글
+          </span>
+          <Suspense>
+            <ViewToggle currentView={currentView} />
+          </Suspense>
+        </div>
+
+        {/* 글 목록 */}
+        <div className="bg-white shadow-sm rounded-xl overflow-hidden mb-6">
+          {currentView === "card" ? (
+            <div className="p-4">
+              <PostCard posts={posts as unknown as Partial<import("@/types").Post>[]} />
+            </div>
+          ) : (
+            <PostList posts={posts as unknown as Partial<import("@/types").Post>[]} />
+          )}
+        </div>
+
+        {/* 페이지네이션 */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          view={currentView}
+          category={category}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
       </main>
     </div>
   );
