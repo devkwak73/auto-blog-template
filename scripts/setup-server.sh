@@ -18,8 +18,8 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 # ── 설정값 (실행 전 반드시 수정) ────────────────────────────
-DOMAIN="yourdomain.com"            # ← 실제 도메인으로 변경
-APP_DIR="/var/www/auction-blog"    # ← 배포 경로
+DOMAIN="blog.easyhelper.kr"        # ← 실제 도메인으로 변경
+APP_DIR="/var/mindra/auto-blog"    # ← 배포 경로
 DB_USER="auction_blog"
 DB_NAME="auction_blog"
 DB_PASS=""                         # ← 실행 시 자동 생성됨
