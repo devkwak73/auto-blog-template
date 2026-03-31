@@ -1,6 +1,7 @@
 /**
  * 특정 글 재생성 스크립트
  * 사용법: npx tsx scripts/regenerate-post.ts basic-002
+ *         npx tsx scripts/regenerate-post.ts basic-002 --new-image  (썸네일도 교체)
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -29,6 +30,101 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+// ── 카테고리 → Unsplash 검색어 맵 ────────────────
+const CATEGORY_QUERY: Record<string, string> = {
+  bidding: "real estate auction court",
+  law:     "law court document",
+  before:  "house inspection document",
+  after:   "house keys property",
+  tax:     "finance tax money",
+  ai:      "technology computer data",
+};
+
+interface UnsplashResult {
+  url: string;
+  attribution: string;
+}
+
+// ── Unsplash 이미지 가져오기 ──────────────────────
+async function fetchUnsplashImage(category: string): Promise<UnsplashResult | null> {
+  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!unsplashKey) {
+    console.log("⚠️  UNSPLASH_ACCESS_KEY 미설정 — 이미지 없이 진행");
+    return null;
+  }
+
+  const query = CATEGORY_QUERY[category] ?? "real estate property";
+
+  try {
+    const url = new URL("https://api.unsplash.com/search/photos");
+    url.searchParams.set("query", query);
+    url.searchParams.set("per_page", "3");
+    url.searchParams.set("orientation", "landscape");
+
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `Client-ID ${unsplashKey}` },
+    });
+
+    if (!res.ok) {
+      console.log(`⚠️  Unsplash API 오류 (${res.status}) — 이미지 없이 진행`);
+      return null;
+    }
+
+    const data = await res.json() as {
+      results: Array<{
+        urls: { regular: string };
+        user: { name: string };
+        links: { html: string };
+      }>;
+    };
+
+    if (!data.results?.length) {
+      console.log("⚠️  Unsplash 검색 결과 없음 — 이미지 없이 진행");
+      return null;
+    }
+
+    const photo = data.results[0];
+    return {
+      url: photo.urls.regular,
+      attribution: `Photo by <a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer">${photo.user.name}</a> on <a href="https://unsplash.com?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer">Unsplash</a>`,
+    };
+  } catch (err) {
+    console.log(`⚠️  Unsplash fetch 실패: ${err instanceof Error ? err.message : String(err)} — 이미지 없이 진행`);
+    return null;
+  }
+}
+
+// ── 콘텐츠 내 이미지 삽입 ────────────────────────
+function injectImagesIntoContent(html: string, images: UnsplashResult[]): string {
+  if (!images.length) return html;
+
+  const DELIMITER = "</h2>";
+  const parts = html.split(DELIMITER);
+
+  const targets: Array<[partIndex: number, imageIndex: number]> = [
+    [1, 0],
+    [3, 1],
+  ];
+
+  for (const [partIdx, imgIdx] of targets) {
+    if (partIdx >= parts.length || !images[imgIdx]) continue;
+
+    const img = images[imgIdx];
+    const figure = [
+      `<figure style="margin:1.75em 0;">`,
+      `<img src="${img.url}" alt="관련 이미지" loading="lazy"`,
+      ` style="width:100%;max-height:400px;object-fit:cover;border-radius:10px;border:1px solid var(--border);" />`,
+      `<figcaption style="font-size:0.75rem;color:var(--ink-faint);margin-top:0.5em;text-align:center;">`,
+      img.attribution,
+      `</figcaption></figure>`,
+    ].join("");
+
+    parts[partIdx] = parts[partIdx] + figure;
+  }
+
+  return parts.join(DELIMITER);
+}
+
 function buildPrompt(topic: Topic): string {
   return `당신은 "부놈의 경매이야기" 블로그의 운영자 '부놈'입니다. 부동산 경매 전문 블로그 작가입니다.
 
@@ -43,12 +139,13 @@ function buildPrompt(topic: Topic): string {
 2. 반드시 존댓말(~요, ~습니다, ~세요)만 사용. 반말(~야, ~해, ~이야) 절대 금지
 3. 블로그 운영자 '부놈'이 독자에게 따뜻하게 설명해주는 느낌으로 작성
 4. 예시: "여러분, 부동산 경매라는 말 들어보셨나요?", "걱정 마세요! 오늘은 제가 알려드릴게요" 처럼 친근하지만 존댓말 유지
-5. 3000자 내외 (너무 짧으면 안 됨)
-6. 표(<table>)와 목록(<ul><li>)을 최대한 많이 활용
-7. 숫자나 비율로 설명할 수 있는 내용은 반드시 표로 만들 것
-8. 어려운 개념은 쉬운 예시로 반드시 설명
-9. 글의 흐름이 자연스럽게 이어지도록 작성
-10. 글 마지막에 반드시 아래 형식의 "AI 도구 활용 팁" 섹션 추가
+5. 글의 첫 문장은 반드시 주제 내용으로 바로 시작. "안녕하세요", "반갑습니다", "저는 부놈입니다" 등 인사말로 시작 절대 금지
+6. 3000자 내외 (너무 짧으면 안 됨)
+7. 표(<table>)와 목록(<ul><li>)을 최대한 많이 활용
+8. 숫자나 비율로 설명할 수 있는 내용은 반드시 표로 만들 것
+9. 어려운 개념은 쉬운 예시로 반드시 설명
+10. 글의 흐름이 자연스럽게 이어지도록 작성
+11. 글 마지막에 반드시 아래 형식의 "AI 도구 활용 팁" 섹션 추가
 
 [AI 도구 활용 팁 규칙]
 - 이 주제(${topic.title})와 직접 관련된 실용적인 팁 5~8줄
@@ -78,6 +175,9 @@ function cleanHtml(raw: string): string {
     .replace(/```\s*/g, "")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/^#{1,6}\s+(.+)$/gm, "<p>$1</p>")
+    .replace(/<i\b[^>]*class="[^"]*(?:material-icons|fa|fas|far|fab)[^"]*"[^>]*>.*?<\/i>/gi, "")
+    .replace(/<span\b[^>]*class="[^"]*(?:material-icons|material-symbols)[^"]*"[^>]*>.*?<\/span>/gi, "")
+    .replace(/<i\b[^>]*>([a-z_]{3,30})<\/i>/gi, "")
     .trim();
 }
 
@@ -94,6 +194,8 @@ async function main() {
     process.exit(1);
   }
 
+  const forceNewImage = process.argv.includes("--new-image");
+
   console.log(`📝 재생성 대상: [${topic.level}] ${topic.title}`);
   console.log("🤖 Gemini로 글 생성 중...");
 
@@ -101,13 +203,29 @@ async function main() {
   const result = await model.generateContent(prompt);
   const rawContent = result.response.text();
   const content = cleanHtml(rawContent);
-
   console.log(`✍️  생성 완료 (${content.length}자)`);
 
-  await pool.query(
-    `UPDATE posts SET content = ?, updated_at = NOW() WHERE slug = ?`,
-    [content, slug]
-  );
+  console.log("🖼️  Unsplash 이미지 가져오는 중...");
+  const [inlineImg1, inlineImg2] = await Promise.all([
+    fetchUnsplashImage(topic.category),
+    fetchUnsplashImage(topic.category),
+  ]);
+  const inlineImages = [inlineImg1, inlineImg2].filter((img): img is UnsplashResult => img !== null);
+  const contentWithImages = injectImagesIntoContent(content, inlineImages);
+
+  if (forceNewImage) {
+    const thumbnail = await fetchUnsplashImage(topic.category);
+    if (thumbnail) console.log(`🖼️  새 썸네일: ${thumbnail.url}`);
+    await pool.query(
+      `UPDATE posts SET content = ?, thumbnail_url = ?, updated_at = NOW() WHERE slug = ?`,
+      [contentWithImages, thumbnail?.url ?? null, slug]
+    );
+  } else {
+    await pool.query(
+      `UPDATE posts SET content = ?, updated_at = NOW() WHERE slug = ?`,
+      [contentWithImages, slug]
+    );
+  }
 
   console.log(`💾 DB 업데이트 완료 (slug: ${slug})`);
   console.log(`🌐 URL: ${process.env.NEXT_PUBLIC_SITE_URL}/posts/${slug}`);
