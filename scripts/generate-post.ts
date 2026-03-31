@@ -36,12 +36,12 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // ── 카테고리 → Unsplash 검색어 맵 ────────────────
 const CATEGORY_QUERY: Record<string, string> = {
-  bidding: "real estate auction court",
-  law:     "law court document",
-  before:  "house inspection document",
-  after:   "house keys property",
-  tax:     "finance tax money",
-  ai:      "technology computer data",
+  bidding: "real estate auction people meeting",
+  law:     "lawyer people office consultation",
+  before:  "house inspection people property",
+  after:   "house keys family moving people",
+  tax:     "finance advisor meeting people",
+  ai:      "technology people computer office",
 };
 
 interface UnsplashResult {
@@ -49,20 +49,20 @@ interface UnsplashResult {
   attribution: string;
 }
 
-// ── Unsplash 이미지 가져오기 ──────────────────────
-async function fetchUnsplashImage(category: string): Promise<UnsplashResult | null> {
+// ── Unsplash 이미지 여러 장 가져오기 (한 번 호출로 N장) ──
+async function fetchUnsplashImages(category: string, count: number): Promise<UnsplashResult[]> {
   const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!unsplashKey) {
     writeLog("⚠️  UNSPLASH_ACCESS_KEY 미설정 — 이미지 없이 진행");
-    return null;
+    return [];
   }
 
-  const query = CATEGORY_QUERY[category] ?? "real estate property";
+  const query = CATEGORY_QUERY[category] ?? "real estate people property";
 
   try {
     const url = new URL("https://api.unsplash.com/search/photos");
     url.searchParams.set("query", query);
-    url.searchParams.set("per_page", "3");
+    url.searchParams.set("per_page", String(Math.max(count + 2, 5)));
     url.searchParams.set("orientation", "landscape");
 
     const res = await fetch(url.toString(), {
@@ -71,7 +71,7 @@ async function fetchUnsplashImage(category: string): Promise<UnsplashResult | nu
 
     if (!res.ok) {
       writeLog(`⚠️  Unsplash API 오류 (${res.status}) — 이미지 없이 진행`);
-      return null;
+      return [];
     }
 
     const data = await res.json() as {
@@ -84,17 +84,16 @@ async function fetchUnsplashImage(category: string): Promise<UnsplashResult | nu
 
     if (!data.results?.length) {
       writeLog("⚠️  Unsplash 검색 결과 없음 — 이미지 없이 진행");
-      return null;
+      return [];
     }
 
-    const photo = data.results[0];
-    return {
+    return data.results.slice(0, count).map((photo) => ({
       url: photo.urls.regular,
-      attribution: `Photo by <a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer">${photo.user.name}</a> on <a href="https://unsplash.com?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer">Unsplash</a>`,
-    };
+      attribution: `<a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer" style="color:rgba(255,255,255,0.9);">${photo.user.name}</a> / Unsplash`,
+    }));
   } catch (err) {
     writeLog(`⚠️  Unsplash fetch 실패: ${err instanceof Error ? err.message : String(err)} — 이미지 없이 진행`);
-    return null;
+    return [];
   }
 }
 
@@ -116,10 +115,12 @@ function injectImagesIntoContent(html: string, images: UnsplashResult[]): string
 
     const img = images[imgIdx];
     const figure = [
-      `<figure style="margin:1.75em 0;">`,
+      `<figure style="margin:1.75em 0;position:relative;display:block;">`,
       `<img src="${img.url}" alt="관련 이미지" loading="lazy"`,
-      ` style="width:100%;max-height:400px;object-fit:cover;border-radius:10px;border:1px solid var(--border);" />`,
-      `<figcaption style="font-size:0.75rem;color:var(--ink-faint);margin-top:0.5em;text-align:center;">`,
+      ` style="width:100%;max-height:400px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block;" />`,
+      `<figcaption style="position:absolute;bottom:8px;right:10px;font-size:0.65rem;`,
+      `color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.45);`,
+      `padding:2px 7px;border-radius:4px;line-height:1.5;white-space:nowrap;">`,
       img.attribution,
       `</figcaption></figure>`,
     ].join("");
@@ -258,15 +259,11 @@ async function main() {
     const content = cleanHtml(rawContent);
     writeLog(`✍️  생성 완료 (${content.length}자)`);
 
-    // Unsplash 이미지 가져오기
+    // Unsplash 이미지 가져오기 (썸네일 1장 + 인라인 2장 = 총 3장, 한 번 호출)
     writeLog("🖼️  Unsplash 이미지 가져오는 중...");
-    const [thumbnail, inlineImg1, inlineImg2] = await Promise.all([
-      fetchUnsplashImage(topic.category),
-      fetchUnsplashImage(topic.category),
-      fetchUnsplashImage(topic.category),
-    ]);
-
-    const inlineImages = [inlineImg1, inlineImg2].filter((img): img is UnsplashResult => img !== null);
+    const allImages = await fetchUnsplashImages(topic.category, 3);
+    const thumbnail = allImages[0] ?? null;
+    const inlineImages = allImages.slice(1, 3);
     const contentWithImages = injectImagesIntoContent(content, inlineImages);
     if (thumbnail) writeLog(`🖼️  썸네일: ${thumbnail.url}`);
 
