@@ -75,7 +75,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
                 lineHeight: 1.2,
                 letterSpacing: "-0.01em",
               }}>
-                {process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기"}
+                {process.env.NEXT_PUBLIC_SITE_NAME || "내 블로그"}
               </h1>
               <p style={{
                 fontSize: "0.8125rem",

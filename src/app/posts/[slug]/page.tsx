@@ -125,7 +125,7 @@ export default async function PostPage({ params }: Props) {
               textDecoration: "none",
               letterSpacing: "-0.01em",
             }}>
-              부놈의 경매이야기
+              내 블로그
             </Link>
             <Link href="/" style={{
               fontSize: "0.75rem",
@@ -192,7 +192,7 @@ export default async function PostPage({ params }: Props) {
             }}>
               <div style={{ width: "2.5rem", height: "3px", background: "var(--accent)", borderRadius: "2px" }} />
               <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)", fontWeight: 600, letterSpacing: "0.05em" }}>
-                부놈
+                {process.env.NEXT_PUBLIC_SITE_NAME || "운영자"}
               </span>
             </div>
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# 부놈의 경매이야기 - 서버 초기 세팅 스크립트
+# AI 자동 블로그 - 서버 초기 세팅 스크립트
 # Ubuntu 20.04 / 22.04 기준
 # 사용법: sudo bash scripts/setup-server.sh
 # ============================================================
@@ -18,17 +18,17 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 # ── 설정값 (실행 전 반드시 수정) ────────────────────────────
-DOMAIN="blog.easyhelper.kr"        # ← 실제 도메인으로 변경
-APP_DIR="/var/mindra/auto-blog"    # ← 배포 경로
-DB_USER="auction_blog"
-DB_NAME="auction_blog"
+DOMAIN="your-domain.com"        # ← 실제 도메인으로 변경
+APP_DIR="/var/www/my-blog"    # ← 배포 경로
+DB_USER="my_blog"
+DB_NAME="my_blog"
 DB_PASS=""                         # ← 실행 시 자동 생성됨
-GITHUB_REPO="https://github.com/devkwak73/auction-blog.git"
+GITHUB_REPO="https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git"
 NODE_VERSION="20"
 
 echo ""
 echo "============================================"
-echo "  부놈의 경매이야기 서버 세팅 시작"
+echo "  내 블로그 서버 세팅 시작"
 echo "  도메인: $DOMAIN"
 echo "  경로:   $APP_DIR"
 echo "============================================"
@@ -143,7 +143,7 @@ DATABASE_NAME=${DB_NAME}
 
 # ── 사이트 ──
 NEXT_PUBLIC_SITE_URL=https://${DOMAIN}
-NEXT_PUBLIC_SITE_NAME=부놈의 경매이야기
+NEXT_PUBLIC_SITE_NAME=내 블로그
 
 # ── hCaptcha (발급 후 교체) ──
 NEXT_PUBLIC_HCAPTCHA_SITE_KEY=CHANGE_ME
@@ -157,7 +157,7 @@ COMMENT_RATE_LIMIT=3
 RATE_LIMIT_WINDOW=60
 
 # ── 연락처 ──
-NEXT_PUBLIC_CONTACT_EMAIL=dev.kwak73@gmail.com
+NEXT_PUBLIC_CONTACT_EMAIL=your-email@example.com
 
 # ── Google Analytics ──
 NEXT_PUBLIC_GA_ID=G-LQC7MLGKJV
@@ -180,15 +180,15 @@ log "빌드 완료"
 
 # ── 12. PM2 등록 ────────────────────────────────────────────
 log "PM2 등록 중..."
-pm2 delete auction-blog 2>/dev/null || true
-pm2 start npm --name "auction-blog" -- start
+pm2 delete my-blog 2>/dev/null || true
+pm2 start npm --name "my-blog" -- start
 pm2 save
 pm2 startup | tail -1 | bash
 log "PM2 등록 완료"
 
 # ── 13. Nginx 설정 ──────────────────────────────────────────
 log "Nginx 설정 중..."
-cat > /etc/nginx/sites-available/auction-blog <<NGINX
+cat > /etc/nginx/sites-available/my-blog <<NGINX
 server {
     listen 80;
     server_name ${DOMAIN} www.${DOMAIN};
@@ -228,7 +228,7 @@ server {
 }
 NGINX
 
-ln -sf /etc/nginx/sites-available/auction-blog /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/my-blog /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 log "Nginx 설정 완료"
@@ -267,9 +267,9 @@ echo "    - hCaptcha 키"
 echo "  → nano ${APP_DIR}/.env.local"
 echo ""
 echo "  입력 후 재빌드 & 재시작:"
-echo "    cd ${APP_DIR} && npm run build && pm2 restart auction-blog"
+echo "    cd ${APP_DIR} && npm run build && pm2 restart my-blog"
 echo ""
 echo "  PM2 상태 확인: pm2 status"
-echo "  로그 확인:     pm2 logs auction-blog"
+echo "  로그 확인:     pm2 logs my-blog"
 echo "  글 수동 생성:  cd ${APP_DIR} && npm run generate"
 echo "============================================"

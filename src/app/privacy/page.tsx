@@ -3,11 +3,11 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
-  description: "부놈의 경매이야기 개인정보처리방침",
+  description: "내 블로그 개인정보처리방침",
 };
 
 export default function PrivacyPage() {
-  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기";
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "내 블로그";
   const today = new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
 
   return (
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
 
           <h2>7. 개인정보 보호책임자</h2>
           <ul>
-            <li><strong>운영자:</strong> 부놈 (부동산 경매 블로그 운영자)</li>
+            <li><strong>운영자:</strong> 블로그 운영자</li>
             <li><strong>연락처:</strong> <Link href="/contact" style={{ color: "var(--accent)" }}>Contact 페이지</Link> 참조</li>
           </ul>
 

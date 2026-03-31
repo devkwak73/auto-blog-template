@@ -17,7 +17,7 @@ const pool = mysql.createPool({
   port: Number(process.env.DATABASE_PORT) || 3306,
   user: process.env.DATABASE_USER || "root",
   password: process.env.DATABASE_PASSWORD || "",
-  database: process.env.DATABASE_NAME || "auction_blog",
+  database: process.env.DATABASE_NAME || "my_blog",
   socketPath: process.env.DATABASE_SOCKET || undefined,
   charset: "utf8mb4",
 });
@@ -113,7 +113,7 @@ async function fetchUnsplashImages(category: string, count: number, usedIds: Set
         usedIds.add(baseUrl);
         results.push({
           url: photo.urls.regular,
-          attribution: `<a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer" style="color:rgba(255,255,255,0.9);">${photo.user.name}</a> / Unsplash`,
+          attribution: `<a href="${photo.links.html}?utm_source=my_blog&utm_medium=referral" rel="noopener noreferrer" style="color:rgba(255,255,255,0.9);">${photo.user.name}</a> / Unsplash`,
         });
         if (results.length >= count) break;
       }
@@ -163,7 +163,9 @@ function injectImagesIntoContent(html: string, images: UnsplashResult[]): string
 }
 
 function buildPrompt(topic: Topic): string {
-  return `당신은 "부놈의 경매이야기" 블로그의 운영자 '부놈'입니다. 부동산 경매 전문 블로그 작가입니다.
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "내 블로그";
+  // Note: /auto-blog-setup 스킬이 이 함수를 니치에 맞게 자동 교체합니다
+  return `당신은 "${siteName}" 블로그의 전문 작가입니다.
 
 아래 주제로 블로그 글을 작성해주세요.
 
@@ -172,42 +174,24 @@ function buildPrompt(topic: Topic): string {
 카테고리: ${topic.category}
 
 [작성 규칙]
-1. 누구나 이해할 수 있는 쉽고 친근한 말투로 작성 (단, "중학생", "초등학생" 등 특정 연령 언급 절대 금지)
-2. 반드시 존댓말(~요, ~습니다, ~세요)만 사용. 반말(~야, ~해, ~이야) 절대 금지
-3. "여러분", "독자님", "친구" 등 독자를 직접 부르는 호칭 절대 사용 금지
-4. 글의 첫 문장은 반드시 강한 후킹으로 시작. 의문형·충격적 사실·공감 유발 문장 중 하나로 시작
-   좋은 예: "경매로 집을 살 때 가장 큰 착각은 '싸게만 사면 된다'는 생각입니다."
-   좋은 예: "부동산 경매에 실패한 사람들의 공통점이 있습니다."
-   나쁜 예: "안녕하세요", "여러분", "오늘은 ~에 대해 알아보겠습니다" (금지)
-5. 블로그 운영자 '부놈'이 독자에게 차분하고 신뢰감 있게 설명해주는 느낌으로 작성
-6. 인사말("안녕하세요", "반갑습니다", "저는 부놈입니다" 등)로 시작 절대 금지
-7. 3000자 내외 (너무 짧으면 안 됨)
-7. 표(<table>)와 목록(<ul><li>)을 최대한 많이 활용
-8. 숫자나 비율로 설명할 수 있는 내용은 반드시 표로 만들 것
-9. 어려운 개념은 쉬운 예시로 반드시 설명
-10. 글의 흐름이 자연스럽게 이어지도록 작성
-11. 글 마지막에 반드시 아래 형식의 "AI 도구 활용 팁" 섹션 추가
+1. 누구나 이해할 수 있는 쉽고 친근한 말투로 작성
+2. 반드시 존댓말만 사용. 반말 절대 금지
+3. "여러분", "독자님" 등 호칭 사용 금지
+4. 첫 문장은 강한 후킹으로 시작 (인사말 금지)
+5. 3000자 내외, 표와 목록을 최대한 활용
+6. 숫자로 설명 가능한 내용은 반드시 표로 제시
+7. 글 마지막에 "💡 AI 도구 활용 팁" 섹션 포함
 
-[AI 도구 활용 팁 규칙]
-- 이 주제(${topic.title})와 직접 관련된 실용적인 팁 5~8줄
-- 특정 AI 도구 이름(Claude, ChatGPT, Gemini 등) 절대 언급 금지
-- 반드시 "AI 도구"라고만 표기
-- 실제로 복사해서 바로 쓸 수 있는 프롬프트 예시 1~2개 포함
-
-[출력 형식 - 매우 중요]
-- 순수 HTML 태그만 출력 (코드 블록, 마크다운 절대 사용 금지)
-- **, ##, *, \`\`\` 같은 마크다운 기호 절대 사용 금지
+[출력 형식]
+- 순수 HTML만 출력 (마크다운 기호 절대 사용 금지)
 - 사용 가능한 태그: <h2> <h3> <p> <ul> <ol> <li> <table> <thead> <tbody> <tr> <th> <td> <strong> <blockquote>
-- <h1> 태그 사용 금지 (제목은 별도로 표시됨)
-- 응답은 HTML 태그로 시작하고 HTML 태그로 끝날 것
+- <h1> 태그 사용 금지
 
 [AI 도구 활용 팁 HTML 형식]
 <h2>💡 AI 도구 활용 팁</h2>
 <p>...</p>
-<ul>
-  <li>...</li>
-</ul>
-<blockquote>프롬프트 예시: "..."</blockquote>`;
+<ul><li>...</li></ul>
+<blockquote>프롬프트 예시: "..."</blockquote>\`;
 }
 
 function cleanHtml(raw: string): string {
