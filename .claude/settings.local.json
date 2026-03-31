@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh -i \"D:/00.Work/mindra-devkwak.pem\" -o StrictHostKeyChecking=no ubuntu@133.186.218.40 \"git config --global --add safe.directory /var/mindra/auto-blog && cd /var/mindra/auto-blog && git pull origin main\")"
+    ]
+  }
+}

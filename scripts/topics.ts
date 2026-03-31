@@ -1,170 +1,50 @@
+/**
+ * 블로그 주제 목록
+ *
+ * /auto-blog-setup 스킬 실행 시 이 파일이 자동으로 교체됩니다.
+ * 아래는 구조 예시입니다 — 실제 운영 시에는 스킬이 130개 주제를 생성합니다.
+ */
+
 export interface Topic {
-  index: number;       // 전체 순번 (1~130)
-  slug: string;        // DB slug (basic-001 형식)
+  index: number;
+  slug: string;
   level: "기초편" | "중급편" | "고급편";
-  category: string;   // DB category 값
+  category: "before" | "bidding" | "after" | "tax" | "law" | "ai";
   title: string;
   keywords: string;
   meta_description: string;
 }
 
-const basicTopics: Omit<Topic, "index" | "slug" | "level">[] = [
-  { category: "bidding", title: "부동산 경매란 무엇인가? 완전 초보 가이드", keywords: "부동산경매,경매입문,경매란", meta_description: "부동산 경매가 무엇인지 완전 초보도 이해할 수 있게 쉽게 설명합니다. 경매의 개념과 왜 하는지부터 시작합니다." },
-  { category: "bidding", title: "경매 vs 일반 매매, 뭐가 다를까?", keywords: "경매vs매매,경매차이점,부동산매매", meta_description: "경매와 일반 부동산 매매의 차이점을 표로 비교 정리합니다. 장단점을 한눈에 확인하세요." },
-  { category: "bidding", title: "임의경매·강제경매·공매, 3가지 차이점 완벽 정리", keywords: "임의경매,강제경매,공매,차이점", meta_description: "임의경매, 강제경매, 공매의 차이를 쉽게 설명합니다. 어떤 경우에 어떤 경매가 진행되는지 알아봅니다." },
-  { category: "bidding", title: "경매 전체 절차를 한눈에 보기", keywords: "경매절차,경매순서,경매흐름", meta_description: "부동산 경매가 시작부터 끝까지 어떤 순서로 진행되는지 한눈에 볼 수 있게 정리합니다." },
-  { category: "bidding", title: "꼭 알아야 할 경매 용어 30개 총정리", keywords: "경매용어,경매단어,경매기초용어", meta_description: "경매 공부를 시작할 때 반드시 알아야 하는 핵심 용어 30개를 표로 정리했습니다." },
-  { category: "before", title: "등기부등본이란? 읽는 법 완전 정복", keywords: "등기부등본,등기부등본보는법,부동산등기", meta_description: "등기부등본을 처음 보는 사람도 이해할 수 있도록 갑구, 을구, 표제부를 쉽게 설명합니다." },
-  { category: "law", title: "말소기준권리, 이것만 알면 경매 절반은 끝", keywords: "말소기준권리,권리분석,경매권리", meta_description: "경매 권리분석의 핵심인 말소기준권리를 쉽게 이해하고 인수권리와 소멸권리를 구분하는 방법을 알아봅니다." },
-  { category: "law", title: "근저당권이란? 쉽게 이해하기", keywords: "근저당권,담보권,저당권차이", meta_description: "근저당권이 무엇인지, 저당권과 어떻게 다른지 초보도 이해할 수 있게 설명합니다." },
-  { category: "law", title: "전세권과 임차권, 뭐가 다른가?", keywords: "전세권,임차권,차이점,임대차", meta_description: "전세권과 임차권의 차이점을 비교 정리합니다. 경매에서 각각 어떤 영향을 주는지 알아봅니다." },
-  { category: "law", title: "유치권이 붙은 물건이 위험한 이유", keywords: "유치권,유치권경매,유치권위험", meta_description: "유치권이란 무엇이고 경매 물건에 유치권이 붙어있을 때 왜 위험한지 쉽게 설명합니다." },
-  { category: "law", title: "법정지상권, 토지와 건물이 분리될 때", keywords: "법정지상권,토지건물분리,지상권", meta_description: "법정지상권이 무엇이고 경매에서 어떤 상황에 발생하는지 사례로 쉽게 설명합니다." },
-  { category: "law", title: "선순위 임차인과 보증금 보호", keywords: "선순위임차인,보증금,임차인보호", meta_description: "선순위 임차인이 누구인지, 보증금이 얼마나 보호받는지 경매 입찰 전 꼭 확인해야 할 사항을 정리합니다." },
-  { category: "before", title: "최저매각가격과 감정평가 이해하기", keywords: "최저매각가격,감정평가,경매가격", meta_description: "경매에서 최저매각가격이 어떻게 정해지고 감정평가와 어떤 관계인지 설명합니다." },
-  { category: "bidding", title: "입찰보증금 준비 방법과 주의사항", keywords: "입찰보증금,경매보증금,입찰준비", meta_description: "경매 입찰 시 필요한 보증금이 얼마인지, 어떻게 준비하는지 단계별로 안내합니다." },
-  { category: "bidding", title: "기일입찰 현장에서 실제로 어떻게 하나?", keywords: "기일입찰,경매현장,입찰방법", meta_description: "경매 법원 입찰 현장에서 실제로 어떻게 행동해야 하는지 처음 가는 사람을 위한 완벽 가이드입니다." },
-  { category: "after", title: "낙찰 후 해야 할 일 순서 완벽 정리", keywords: "낙찰후절차,경매낙찰,잔금납부", meta_description: "경매에서 낙찰받은 후 어떤 일들을 어떤 순서로 해야 하는지 체크리스트로 정리합니다." },
-  { category: "after", title: "잔금 납부와 소유권 이전 절차", keywords: "잔금납부,소유권이전,경매등기", meta_description: "경매 낙찰 후 잔금 납부부터 소유권 이전까지 전체 과정을 단계별로 설명합니다." },
-  { category: "after", title: "명도란? 세입자 내보내는 방법과 순서", keywords: "명도,세입자명도,명도방법", meta_description: "경매 후 점유자를 내보내는 명도 절차를 법적 방법과 합의 방법으로 나눠 설명합니다." },
-  { category: "after", title: "인도명령 신청하는 방법", keywords: "인도명령,명도소송,법원신청", meta_description: "경매 후 세입자나 전 소유자가 나가지 않을 때 법원에 인도명령을 신청하는 방법을 설명합니다." },
-  { category: "after", title: "점유이전금지 가처분이란?", keywords: "점유이전금지,가처분,명도전략", meta_description: "명도 진행 중 점유자가 바뀌는 것을 막는 점유이전금지 가처분 신청 방법과 효과를 설명합니다." },
-  { category: "tax", title: "경매 대출(경락잔금대출) 완전 이해", keywords: "경락잔금대출,경매대출,담보대출", meta_description: "경매 낙찰 후 잔금을 대출로 마련하는 경락잔금대출의 조건과 절차를 쉽게 설명합니다." },
-  { category: "tax", title: "경매 물건 취득세 계산법", keywords: "취득세,경매취득세,부동산세금", meta_description: "경매로 부동산을 취득할 때 내야 하는 취득세를 직접 계산하는 방법을 예시로 설명합니다." },
-  { category: "before", title: "대법원 경매정보 사이트 100% 활용법", keywords: "대법원경매정보,경매사이트,경매검색", meta_description: "대법원 경매정보 사이트에서 원하는 물건을 찾고 상세 정보를 확인하는 방법을 화면별로 설명합니다." },
-  { category: "before", title: "경매 물건 검색, 이렇게 하면 된다", keywords: "경매물건검색,경매검색방법,물건찾기", meta_description: "초보자도 원하는 조건의 경매 물건을 빠르게 찾을 수 있는 검색 방법과 필터 설정법을 안내합니다." },
-  { category: "before", title: "현장 답사 체크리스트 완벽 가이드", keywords: "현장답사,경매답사,체크리스트", meta_description: "경매 입찰 전 현장 답사에서 반드시 확인해야 할 사항들을 체크리스트로 정리합니다." },
-  { category: "bidding", title: "입찰가는 어떻게 결정할까?", keywords: "입찰가결정,낙찰가전략,경매가격전략", meta_description: "경매 입찰가를 어떻게 계산하고 결정해야 하는지 수익률 기반 계산법을 설명합니다." },
-  { category: "bidding", title: "초보들이 자주 하는 실수 TOP 5", keywords: "경매실수,경매주의사항,초보실수", meta_description: "경매 초보자들이 자주 저지르는 5가지 실수를 실제 사례와 함께 설명하고 예방법을 알려드립니다." },
-  { category: "before", title: "첫 경매 시작 전 준비물 완벽 정리", keywords: "경매준비물,경매시작,경매입문준비", meta_description: "경매를 처음 시작할 때 필요한 서류, 자금, 지식을 단계별로 정리한 완벽 준비 가이드입니다." },
-  { category: "tax", title: "경매 수익률, 이렇게 계산하면 된다", keywords: "경매수익률,투자수익률,수익계산", meta_description: "경매 투자 수익률을 직접 계산하는 공식과 예시를 표로 정리합니다. 초보도 바로 따라할 수 있습니다." },
-  { category: "before", title: "아파트 경매, 입문자가 노리기 좋은 이유", keywords: "아파트경매,경매아파트,아파트투자", meta_description: "왜 초보 경매 투자자에게 아파트가 적합한지 장단점과 주의사항을 정리합니다." },
-  { category: "before", title: "빌라·다세대 경매 시 주의할 점", keywords: "빌라경매,다세대경매,빌라투자", meta_description: "빌라와 다세대 경매에서 특별히 조심해야 할 권리관계와 주의사항을 정리합니다." },
-  { category: "before", title: "오피스텔 경매 특징과 주의점", keywords: "오피스텔경매,오피스텔투자,주거용오피스텔", meta_description: "오피스텔 경매만의 특징과 세금, 임차인 문제 등 초보자가 꼭 알아야 할 사항을 설명합니다." },
-  { category: "before", title: "경매 물건의 종류와 특징 한눈에 보기", keywords: "경매물건종류,부동산종류,경매유형", meta_description: "아파트, 빌라, 상가, 토지 등 경매 물건 종류별 특징과 장단점을 표로 한눈에 비교합니다." },
-  { category: "law", title: "배당이란? 낙찰금은 누구에게 가나?", keywords: "배당,경매배당,배당순서", meta_description: "경매 낙찰금이 누구에게 얼마씩 나눠지는지 배당 순서와 계산 방법을 쉽게 설명합니다." },
-  { category: "before", title: "경매 공고문 읽는 방법", keywords: "경매공고문,매각공고,경매공고", meta_description: "법원 경매 공고문에 담긴 정보를 어떻게 읽고 해석해야 하는지 항목별로 설명합니다." },
-  { category: "before", title: "매각물건명세서 이해하기", keywords: "매각물건명세서,경매서류,물건명세서", meta_description: "경매 입찰 전 필수 서류인 매각물건명세서를 항목별로 분석하는 방법을 설명합니다." },
-  { category: "before", title: "현황조사서와 감정평가서 읽기", keywords: "현황조사서,감정평가서,경매서류", meta_description: "현황조사서와 감정평가서에서 어떤 정보를 확인해야 하는지 항목별로 안내합니다." },
-  { category: "before", title: "임차인 현황 파악하는 방법", keywords: "임차인현황,세입자확인,임차인조사", meta_description: "경매 입찰 전 임차인 현황을 제대로 파악하는 방법과 확인해야 할 서류를 설명합니다." },
-  { category: "after", title: "경매 물건 명도 비용 계산법", keywords: "명도비용,이사비용,명도합의금", meta_description: "경매 후 명도 과정에서 발생하는 비용을 미리 계산하는 방법과 예산 잡는 요령을 알려드립니다." },
-  { category: "after", title: "낙찰 후 리모델링 비용 예산 잡기", keywords: "리모델링비용,인테리어예산,수리비", meta_description: "경매 낙찰 후 리모델링에 드는 비용을 항목별로 예산 잡는 방법을 표로 정리합니다." },
-  { category: "ai", title: "AI 도구로 경매 공부 10배 빠르게 하는 법", keywords: "AI경매공부,AI활용,경매AI", meta_description: "AI 도구를 활용해서 경매 개념을 빠르게 이해하고 공부 효율을 높이는 방법을 소개합니다." },
-  { category: "ai", title: "AI 도구로 경매 용어 완전 정복하기", keywords: "AI용어공부,경매용어AI,AI학습", meta_description: "AI 도구에 경매 용어를 물어보고 자신만의 용어 사전을 만드는 방법을 안내합니다." },
-  { category: "bidding", title: "기초편 총정리 - 경매 첫걸음 완성", keywords: "경매기초총정리,경매요약,경매정리", meta_description: "경매 기초편에서 배운 내용을 한 번에 정리합니다. 초보에서 중급으로 넘어가기 전 최종 점검합니다." },
-];
-
-const midTopics: Omit<Topic, "index" | "slug" | "level">[] = [
-  { category: "law", title: "권리분석 심화: 복잡한 등기 해석법", keywords: "권리분석심화,등기분석,복잡한등기", meta_description: "여러 권리가 얽힌 복잡한 등기부등본을 분석하는 심화 방법을 사례 중심으로 설명합니다." },
-  { category: "law", title: "배당표 직접 만들어보기", keywords: "배당표작성,배당계산,배당순위", meta_description: "실제 경매 사례를 바탕으로 배당표를 직접 만들어보며 배당 계산 방법을 완전히 익힙니다." },
-  { category: "law", title: "가압류가 붙은 물건 분석법", keywords: "가압류,가압류경매,가압류물건", meta_description: "가압류가 설정된 경매 물건에서 어떤 점을 확인하고 어떻게 분석해야 하는지 설명합니다." },
-  { category: "law", title: "예고등기와 가처분 이해", keywords: "예고등기,가처분,경매위험", meta_description: "예고등기와 가처분이 경매 물건에 미치는 영향과 대처법을 사례와 함께 설명합니다." },
-  { category: "before", title: "지분 경매란? 어떻게 접근할까?", keywords: "지분경매,공유지분,지분투자", meta_description: "공유 지분만 경매에 나오는 지분 경매의 특징과 리스크, 투자 방법을 설명합니다." },
-  { category: "before", title: "재경매 물건, 위험할까 기회일까?", keywords: "재경매,유찰물건,재매각", meta_description: "낙찰 취소 후 다시 경매에 나온 재경매 물건의 특징과 투자 기회를 분석합니다." },
-  { category: "bidding", title: "유찰 횟수로 입찰가 전략 세우기", keywords: "유찰횟수,낙찰가전략,입찰전략", meta_description: "유찰 횟수에 따라 입찰 전략을 어떻게 달리 세워야 하는지 수치와 표로 설명합니다." },
-  { category: "tax", title: "NPL(부실채권) 투자 기초", keywords: "NPL,부실채권,채권투자", meta_description: "부실채권(NPL) 투자의 개념과 기초를 이해하고 경매와의 연관성을 쉽게 설명합니다." },
-  { category: "after", title: "아파트 경매 수익률 극대화 전략", keywords: "아파트경매전략,수익극대화,아파트투자전략", meta_description: "아파트 경매에서 수익률을 높이는 물건 선택과 입찰가 결정 전략을 구체적으로 설명합니다." },
-  { category: "law", title: "빌라·다세대 경매 권리분석 심화", keywords: "빌라권리분석,다세대경매분석,빌라심화", meta_description: "빌라와 다세대 경매에서 자주 나오는 복잡한 권리관계를 심화 분석하는 방법을 설명합니다." },
-  { category: "before", title: "상가 경매 특징과 수익 분석", keywords: "상가경매,상가투자,상가수익률", meta_description: "상가 경매만의 특징과 수익 구조를 분석하고 투자 시 주의해야 할 사항을 정리합니다." },
-  { category: "before", title: "토지 경매 기초와 접근법", keywords: "토지경매,땅경매,토지투자", meta_description: "토지 경매의 기초 개념과 지목, 용도지역에 따른 가치 분석 방법을 설명합니다." },
-  { category: "before", title: "근린생활시설 경매 전략", keywords: "근린생활시설,상가경매,생활시설투자", meta_description: "근린생활시설 경매의 특징과 임차인 구성, 수익률 분석 방법을 사례와 함께 설명합니다." },
-  { category: "after", title: "임차인 협상 전략과 합의금 계산", keywords: "임차인협상,합의금,명도협상", meta_description: "명도 시 임차인과 원만하게 협상하는 전략과 적정 합의금을 계산하는 방법을 설명합니다." },
-  { category: "after", title: "명도 분쟁 대처법", keywords: "명도분쟁,명도소송,분쟁해결", meta_description: "임차인과 명도 분쟁이 생겼을 때 법적으로 대처하는 방법과 소요 시간을 설명합니다." },
-  { category: "tax", title: "경매 대출 전략과 레버리지 활용", keywords: "경매대출전략,레버리지,투자레버리지", meta_description: "대출을 활용해 경매 투자 수익률을 높이는 레버리지 전략과 리스크 관리 방법을 설명합니다." },
-  { category: "tax", title: "경락잔금대출 은행별 비교", keywords: "경락잔금대출비교,은행대출,대출조건", meta_description: "주요 은행들의 경락잔금대출 조건을 비교하고 유리한 대출을 받는 방법을 안내합니다." },
-  { category: "after", title: "세입자 있는 물건, 어떻게 수익 낼까?", keywords: "세입자물건,임차인수익,세입자전략", meta_description: "임차인이 있는 경매 물건에서 수익을 내는 방법과 세입자 보증금 처리 전략을 설명합니다." },
-  { category: "law", title: "선순위 임차인 물건 분석 심화", keywords: "선순위임차인심화,임차인분석,보증금분석", meta_description: "선순위 임차인이 있는 물건을 깊이 분석하는 방법과 투자 여부 판단 기준을 설명합니다." },
-  { category: "before", title: "경매 물건 시세 조사 방법", keywords: "시세조사,부동산시세,경매시세", meta_description: "경매 물건의 정확한 시세를 조사하는 다양한 방법과 활용할 수 있는 사이트를 소개합니다." },
-  { category: "bidding", title: "부동산 가격 하락기 경매 전략", keywords: "부동산하락기,하락장전략,경매타이밍", meta_description: "부동산 시장이 하락할 때 경매 투자 전략을 어떻게 조정해야 하는지 구체적으로 설명합니다." },
-  { category: "bidding", title: "부동산 가격 상승기 경매 전략", keywords: "부동산상승기,상승장전략,경매상승기", meta_description: "부동산 시장이 상승할 때 경매 투자에서 기회를 잡는 전략을 설명합니다." },
-  { category: "before", title: "경매 물건 관리 스프레드시트 만들기", keywords: "경매관리,스프레드시트,물건관리", meta_description: "여러 경매 물건을 체계적으로 관리하는 스프레드시트 양식을 만드는 방법을 단계별로 설명합니다." },
-  { category: "after", title: "낙찰 후 월세 vs 전세 전략 비교", keywords: "월세전략,전세전략,임대전략비교", meta_description: "낙찰 후 월세와 전세 중 어떤 임대 방식이 유리한지 수익률과 리스크를 비교 분석합니다." },
-  { category: "after", title: "수익형 부동산 포트폴리오 구성법", keywords: "포트폴리오,수익형부동산,투자포트폴리오", meta_description: "경매로 구성하는 수익형 부동산 포트폴리오 전략과 분산 투자 방법을 설명합니다." },
-  { category: "tax", title: "양도소득세 절세 전략", keywords: "양도소득세,절세,양도세줄이기", meta_description: "경매 투자 시 양도소득세를 합법적으로 줄이는 절세 전략과 보유 기간별 세율을 정리합니다." },
-  { category: "tax", title: "취득세 감면 받는 방법", keywords: "취득세감면,세금감면,취득세절세", meta_description: "경매로 부동산을 취득할 때 취득세 감면 조건과 신청 방법을 표로 정리합니다." },
-  { category: "after", title: "공동 투자(조합 투자) 방법과 주의점", keywords: "공동투자,조합투자,동업투자", meta_description: "여러 명이 함께 하는 경매 공동 투자의 방법과 계약서 작성 시 주의할 점을 설명합니다." },
-  { category: "tax", title: "법인 명의 경매 투자 기초", keywords: "법인경매,법인투자,법인세", meta_description: "법인 명의로 경매 투자를 하는 것의 장단점과 기초 절차를 설명합니다." },
-  { category: "tax", title: "부동산 경매와 세금 완전 정리", keywords: "경매세금,부동산세금,취득세양도세", meta_description: "경매 투자 시 납부해야 하는 세금 종류를 취득부터 양도까지 전체 흐름으로 정리합니다." },
-  { category: "after", title: "낙찰 물건 리모델링 전략", keywords: "리모델링전략,인테리어전략,리노베이션", meta_description: "경매 낙찰 물건의 가치를 높이는 리모델링 전략과 비용 대비 효과를 분석합니다." },
-  { category: "after", title: "공실 리스크 줄이는 임차인 구하기", keywords: "공실관리,임차인모집,공실리스크", meta_description: "낙찰 후 공실을 빠르게 채우는 임차인 모집 전략과 임대 조건 설정 방법을 설명합니다." },
-  { category: "before", title: "경매 정보지·커뮤니티 100% 활용법", keywords: "경매커뮤니티,경매정보,경매사이트", meta_description: "경매 투자에 도움이 되는 정보지, 온라인 커뮤니티, 유용한 사이트를 소개하고 활용법을 설명합니다." },
-  { category: "before", title: "경매 스터디 활용법과 네트워킹", keywords: "경매스터디,투자네트워킹,경매모임", meta_description: "경매 스터디를 통해 실력을 높이고 투자자 네트워크를 만드는 방법을 안내합니다." },
-  { category: "before", title: "나쁜 물건 피하는 체크리스트", keywords: "나쁜물건,경매리스크,물건선별", meta_description: "경매에서 피해야 할 위험한 물건의 특징을 체크리스트로 정리합니다. 입찰 전 반드시 확인하세요." },
-  { category: "ai", title: "AI 도구로 권리분석 자동화하기", keywords: "AI권리분석,AI경매분석,자동화", meta_description: "AI 도구를 활용해 등기부등본 권리분석을 빠르고 정확하게 처리하는 방법을 소개합니다." },
-  { category: "ai", title: "AI 도구로 수익률 시뮬레이션 하기", keywords: "AI수익률,수익시뮬레이션,AI투자분석", meta_description: "AI 도구를 사용해 경매 물건의 수익률을 다양한 시나리오로 시뮬레이션하는 방법을 설명합니다." },
-  { category: "ai", title: "AI 도구로 임차인 명도 협상 준비하기", keywords: "AI명도협상,협상준비,AI활용협상", meta_description: "명도 협상에 앞서 AI 도구로 협상 전략과 대화 스크립트를 미리 준비하는 방법을 소개합니다." },
-  { category: "ai", title: "AI 도구로 경매 물건 비교 분석하기", keywords: "AI물건비교,경매비교분석,AI투자", meta_description: "여러 경매 물건을 AI 도구로 빠르게 비교하고 투자 우선순위를 정하는 방법을 설명합니다." },
-  { category: "ai", title: "AI 도구로 세금 계산 빠르게 하기", keywords: "AI세금계산,취득세계산AI,세금AI", meta_description: "경매 관련 세금 계산을 AI 도구로 빠르게 처리하는 방법과 프롬프트 예시를 소개합니다." },
-  { category: "before", title: "중급 경매인의 물건 선별 기준", keywords: "물건선별기준,경매기준,투자기준", meta_description: "중급 경매 투자자의 눈으로 좋은 물건을 골라내는 구체적인 기준과 점수표를 소개합니다." },
-  { category: "bidding", title: "실전 경매 케이스 스터디 1", keywords: "경매케이스,실전경매,경매사례", meta_description: "실제 경매 투자 사례를 분석하며 권리분석부터 수익 실현까지 전 과정을 함께 살펴봅니다." },
-  { category: "bidding", title: "중급편 총정리 - 수익형 경매 전략 완성", keywords: "중급편총정리,경매중급,수익전략", meta_description: "중급편 내용을 총정리하고 실전 수익형 경매 투자자로 도약하기 위한 핵심을 정리합니다." },
-];
-
-const advancedTopics: Omit<Topic, "index" | "slug" | "level">[] = [
-  { category: "law", title: "복잡한 권리관계 완전 해결 전략", keywords: "복잡한권리관계,권리분석고급,경매고급", meta_description: "다수의 권리가 복잡하게 얽힌 경매 물건에서 완전한 해결 전략을 수립하는 방법을 설명합니다." },
-  { category: "law", title: "가등기·본등기 이해와 경매 적용", keywords: "가등기,본등기,가등기경매", meta_description: "가등기와 본등기가 경매에 미치는 영향을 이해하고 물건 분석에 적용하는 방법을 설명합니다." },
-  { category: "law", title: "신탁등기 물건 분석법", keywords: "신탁등기,신탁경매,신탁물건", meta_description: "신탁등기가 설정된 경매 물건의 구조를 이해하고 투자 가능 여부를 판단하는 방법을 설명합니다." },
-  { category: "law", title: "환매권이 붙은 물건 처리법", keywords: "환매권,환매특약,환매등기", meta_description: "환매권이 설정된 경매 물건의 위험성을 분석하고 투자 판단 기준을 설명합니다." },
-  { category: "law", title: "복잡한 공유지분 경매 전략", keywords: "공유지분경매,지분전략,공유물분할", meta_description: "여러 명의 공유지분이 경매에 나올 때 활용할 수 있는 고급 투자 전략을 설명합니다." },
-  { category: "law", title: "법정지상권 심화 - 분쟁 해결까지", keywords: "법정지상권심화,지상권분쟁,토지건물", meta_description: "법정지상권이 설정된 물건의 분쟁을 해결하는 법적 절차와 협상 전략을 설명합니다." },
-  { category: "law", title: "유치권 배제 전략과 소송 대응", keywords: "유치권배제,유치권소송,유치권전략", meta_description: "허위 유치권을 배제하는 전략과 유치권 소송에서 승소하는 방법을 설명합니다." },
-  { category: "before", title: "재개발·재건축 예정 물건 경매", keywords: "재개발경매,재건축경매,개발예정지", meta_description: "재개발·재건축이 예정된 지역의 경매 물건을 투자하는 전략과 리스크를 분석합니다." },
-  { category: "before", title: "토지 경매 심화 - 지목과 용도지역", keywords: "토지심화,지목,용도지역", meta_description: "토지 경매에서 지목과 용도지역을 분석해 토지 가치를 정확히 평가하는 방법을 설명합니다." },
-  { category: "before", title: "농지 경매와 농지취득자격증명", keywords: "농지경매,농취증,농지취득", meta_description: "농지 경매 낙찰 시 필수인 농지취득자격증명(농취증) 발급 방법과 조건을 설명합니다." },
-  { category: "before", title: "임야 경매 접근법", keywords: "임야경매,산지경매,임야투자", meta_description: "임야 경매의 특성과 투자 가치를 판단하는 기준, 개발 가능성 분석 방법을 설명합니다." },
-  { category: "before", title: "공장·창고 경매 투자 전략", keywords: "공장경매,창고경매,산업용부동산", meta_description: "공장과 창고 경매의 특징과 임대 수요, 수익률 분석 방법을 설명합니다." },
-  { category: "before", title: "호텔·모텔 경매 특성 분석", keywords: "호텔경매,모텔경매,숙박시설경매", meta_description: "호텔·모텔 경매의 특수성과 영업권 처리, 수익 구조를 분석하는 방법을 설명합니다." },
-  { category: "bidding", title: "경매로 건물 통째로 사는 법", keywords: "건물통째로,건물경매,건물매입", meta_description: "빌딩 전체를 경매로 취득하는 전략과 대출 구조, 수익 극대화 방법을 설명합니다." },
-  { category: "law", title: "선순위 가압류 전략적 활용", keywords: "가압류전략,선순위가압류,가압류활용", meta_description: "선순위 가압류를 전략적으로 분석해 투자 기회로 만드는 고급 접근법을 설명합니다." },
-  { category: "law", title: "배당 이의 신청과 활용법", keywords: "배당이의,배당이의신청,배당분쟁", meta_description: "경매 배당 결과에 이의가 있을 때 신청 방법과 활용할 수 있는 전략을 설명합니다." },
-  { category: "bidding", title: "경매 취하와 매각허가 취소", keywords: "경매취하,매각허가취소,경매중단", meta_description: "경매 취하와 매각허가 취소가 일어나는 경우와 낙찰자로서 대응 방법을 설명합니다." },
-  { category: "bidding", title: "매각불허가 사유와 대응", keywords: "매각불허가,불허가사유,경매취소", meta_description: "매각허가가 거부되는 사유들과 이에 대한 법적 대응 방법을 설명합니다." },
-  { category: "bidding", title: "즉시항고와 경매 진행 중단 전략", keywords: "즉시항고,항고,경매항고", meta_description: "경매 진행 중 즉시항고를 통해 매각을 막는 전략과 법적 절차를 설명합니다." },
-  { category: "bidding", title: "공매(캠코) 심화 전략", keywords: "공매심화,캠코,한국자산관리공사", meta_description: "한국자산관리공사(캠코) 공매의 특성과 법원 경매와의 차이를 활용한 심화 투자 전략을 설명합니다." },
-  { category: "before", title: "세금 체납 공매 물건 분석법", keywords: "세금체납공매,체납공매,국세공매", meta_description: "세금 체납으로 진행되는 공매 물건의 특징과 분석 방법, 투자 전략을 설명합니다." },
-  { category: "tax", title: "법인 경매 투자 심화 전략", keywords: "법인경매심화,법인투자전략,절세법인", meta_description: "법인을 활용한 경매 투자의 세금 이점과 효율적인 운영 전략을 심화 수준으로 설명합니다." },
-  { category: "tax", title: "부동산 펀드·리츠와 경매 연계", keywords: "부동산펀드,리츠,경매연계투자", meta_description: "부동산 펀드와 리츠 구조를 이해하고 경매 투자와 연계하는 방법을 설명합니다." },
-  { category: "tax", title: "경매 자금 조달 고급 전략", keywords: "자금조달,경매자금,투자자금전략", meta_description: "경매 투자를 위한 다양한 자금 조달 방법과 금융 상품을 활용하는 고급 전략을 설명합니다." },
-  { category: "tax", title: "브리지론과 후순위 담보 활용", keywords: "브리지론,후순위담보,단기대출", meta_description: "경매 투자에서 브리지론과 후순위 담보 대출을 활용해 레버리지를 극대화하는 방법을 설명합니다." },
-  { category: "tax", title: "다주택자 경매 세금 최적화", keywords: "다주택자세금,경매다주택,세금최적화", meta_description: "다주택자가 경매 투자 시 세금 부담을 최소화하는 합법적 최적화 전략을 설명합니다." },
-  { category: "tax", title: "경매 법인 설립과 운영 전략", keywords: "경매법인설립,법인운영,부동산법인", meta_description: "경매 전용 법인을 설립하고 효율적으로 운영하는 방법과 절세 효과를 설명합니다." },
-  { category: "tax", title: "임대사업자 등록과 경매 연계", keywords: "임대사업자,임대사업자등록,임대세금", meta_description: "임대사업자 등록을 통해 경매 투자 세금을 줄이는 방법과 등록 조건을 설명합니다." },
-  { category: "tax", title: "부동산 경매와 상속세 절세", keywords: "상속세절세,경매상속,상속부동산", meta_description: "경매를 활용한 상속세 절세 전략과 상속 부동산의 경매 투자 접근법을 설명합니다." },
-  { category: "after", title: "경매 물건 개발 행위 허가 받기", keywords: "개발행위허가,토지개발,경매개발", meta_description: "경매로 취득한 토지나 건물의 개발 행위 허가를 받는 절차와 방법을 설명합니다." },
-  { category: "after", title: "용도변경으로 수익 극대화하기", keywords: "용도변경,수익극대화,부동산용도", meta_description: "경매 물건의 용도변경을 통해 가치를 높이고 수익을 극대화하는 방법을 설명합니다." },
-  { category: "after", title: "경매 물건 신축·증축 전략", keywords: "신축전략,증축전략,부동산개발", meta_description: "경매 취득 후 신축 또는 증축을 통해 수익을 창출하는 전략과 인허가 절차를 설명합니다." },
-  { category: "tax", title: "부동산 경매와 NPL 연계 투자", keywords: "NPL연계,부실채권투자,NPL경매", meta_description: "NPL(부실채권) 매입과 경매를 연계한 심화 투자 전략과 수익 구조를 설명합니다." },
-  { category: "after", title: "경매 물건 분양·매각 전략", keywords: "분양전략,매각전략,경매분양", meta_description: "경매 취득 물건을 분양하거나 매각해 수익을 극대화하는 전략과 절차를 설명합니다." },
-  { category: "before", title: "대형 수익형 부동산 경매 투자", keywords: "대형부동산,대형경매,상업용부동산", meta_description: "대형 상업용 부동산 경매 투자의 특성과 자금 조달, 수익 구조 분석 방법을 설명합니다." },
-  { category: "ai", title: "AI 도구로 경매 물건 자동 스크리닝", keywords: "AI스크리닝,경매자동화,물건선별AI", meta_description: "AI 도구를 활용해 다수의 경매 물건을 빠르게 스크리닝하고 투자 후보를 선별하는 방법을 설명합니다." },
-  { category: "ai", title: "AI 도구로 법원 경매 공고 분석 자동화", keywords: "AI공고분석,경매공고자동화,AI분석", meta_description: "AI 도구로 법원 경매 공고를 자동으로 분석하고 핵심 정보를 추출하는 방법을 소개합니다." },
-  { category: "ai", title: "AI 도구로 투자 보고서 자동 생성", keywords: "AI보고서,투자보고서자동화,AI투자분석", meta_description: "경매 물건 분석 결과를 AI 도구로 전문적인 투자 보고서로 자동 생성하는 방법을 설명합니다." },
-  { category: "ai", title: "AI 도구로 임대 수익 최적화 분석", keywords: "AI임대분석,임대수익최적화,AI부동산", meta_description: "AI 도구로 임대 조건을 분석하고 수익을 최적화하는 전략을 수립하는 방법을 소개합니다." },
-  { category: "ai", title: "AI 도구 활용 경매 투자 완전 자동화", keywords: "경매자동화,AI완전자동화,AI투자자동화", meta_description: "AI 도구를 활용해 경매 물건 탐색부터 분석, 보고까지 투자 프로세스를 자동화하는 방법을 설명합니다." },
-  { category: "bidding", title: "실전 경매 케이스 스터디 - 고수익 사례", keywords: "고수익사례,케이스스터디,성공경매", meta_description: "실제 고수익 경매 투자 사례를 분석하며 성공 요인을 파악하고 전략을 배웁니다." },
-  { category: "bidding", title: "실전 경매 케이스 스터디 - 실패 사례와 교훈", keywords: "경매실패사례,실패교훈,경매실수", meta_description: "경매 투자 실패 사례를 분석하며 같은 실수를 반복하지 않는 방법을 배웁니다." },
-  { category: "bidding", title: "경매 전문가로 성장하는 로드맵", keywords: "경매전문가,경매로드맵,투자성장", meta_description: "경매 초보에서 전문가로 성장하기까지의 단계별 로드맵과 필요한 역량을 정리합니다." },
-  { category: "bidding", title: "고급편 총정리 - 경매 고수의 완성", keywords: "고급편총정리,경매고수,전문투자자", meta_description: "고급편 내용을 총정리하고 경매 전문 투자자로서의 완성된 역량을 점검합니다." },
-];
-
-// 전체 130개 주제 생성
+// ── 예시 주제 (스킬 실행 시 니치에 맞게 130개로 교체됩니다) ──
 export const allTopics: Topic[] = [
-  ...basicTopics.map((t, i) => ({
-    ...t,
-    index: i + 1,
-    slug: `basic-${String(i + 1).padStart(3, "0")}`,
-    level: "기초편" as const,
-  })),
-  ...midTopics.map((t, i) => ({
-    ...t,
-    index: basicTopics.length + i + 1,
-    slug: `mid-${String(i + 1).padStart(3, "0")}`,
-    level: "중급편" as const,
-  })),
-  ...advancedTopics.map((t, i) => ({
-    ...t,
-    index: basicTopics.length + midTopics.length + i + 1,
-    slug: `adv-${String(i + 1).padStart(3, "0")}`,
-    level: "고급편" as const,
-  })),
+  {
+    index: 1, slug: "basic-001", level: "기초편", category: "before",
+    title: "이 블로그 주제 완전 초보 가이드",
+    keywords: "입문,기초,가이드",
+    meta_description: "완전 초보도 이해할 수 있게 이 블로그의 핵심 주제를 쉽게 설명합니다.",
+  },
+  {
+    index: 2, slug: "basic-002", level: "기초편", category: "bidding",
+    title: "꼭 알아야 할 핵심 개념 10가지",
+    keywords: "핵심개념,기초지식,필수용어",
+    meta_description: "이 분야를 공부할 때 반드시 알아야 할 핵심 개념 10가지를 정리합니다.",
+  },
+  {
+    index: 3, slug: "basic-003", level: "기초편", category: "law",
+    title: "초보자가 가장 많이 하는 실수 5가지",
+    keywords: "초보실수,주의사항,실패사례",
+    meta_description: "처음 시작하는 사람들이 자주 하는 실수와 피하는 방법을 알아봅니다.",
+  },
+  {
+    index: 4, slug: "mid-001", level: "중급편", category: "after",
+    title: "중급자를 위한 심화 전략",
+    keywords: "중급전략,심화학습,실전적용",
+    meta_description: "기초를 넘어 더 깊은 수준의 전략과 실전 노하우를 공유합니다.",
+  },
+  {
+    index: 5, slug: "adv-001", level: "고급편", category: "ai",
+    title: "AI 도구를 활용한 고급 접근법",
+    keywords: "AI활용,고급기법,자동화",
+    meta_description: "AI 도구를 이 분야에 접목해 더 효율적으로 성과를 내는 방법을 소개합니다.",
+  },
 ];

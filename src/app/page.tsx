@@ -10,11 +10,11 @@ const LIMIT = 10;
 
 const categories: { key: string | null; label: string }[] = [
   { key: null,       label: "전체" },
-  { key: "before",   label: "입찰준비" },
-  { key: "bidding",  label: "입찰·낙찰" },
-  { key: "after",    label: "명도·출구" },
-  { key: "tax",      label: "세금·대출" },
-  { key: "law",      label: "권리분석" },
+  { key: "before",   label: "준비" },
+  { key: "bidding",  label: "실전" },
+  { key: "after",    label: "관리" },
+  { key: "tax",      label: "비용·세금" },
+  { key: "law",      label: "규정·법률" },
   { key: "ai",       label: "AI활용" },
 ];
 
@@ -65,7 +65,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
                 color: "var(--accent)",
                 marginBottom: "0.5rem",
               }}>
-                부동산 경매 전문 블로그
+                전문 블로그
               </div>
               <h1 style={{
                 fontFamily: "var(--font-serif)",
@@ -83,7 +83,7 @@ export default async function HomePage({ searchParams }: { searchParams: SearchP
                 marginTop: "0.5rem",
                 letterSpacing: "0.02em",
               }}>
-                AI로 더 쉽게, 더 스마트하게 — 경매 기초부터 실전까지
+                AI로 더 쉽게, 더 스마트하게
               </p>
             </div>
             <div style={{

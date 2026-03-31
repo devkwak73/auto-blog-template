@@ -20,7 +20,7 @@ const pool = mysql.createPool({
   port: Number(process.env.DATABASE_PORT) || 3306,
   user: process.env.DATABASE_USER || "root",
   password: process.env.DATABASE_PASSWORD || "",
-  database: process.env.DATABASE_NAME || "auction_blog",
+  database: process.env.DATABASE_NAME || "my_blog",
   socketPath: process.env.DATABASE_SOCKET || undefined,
   charset: "utf8mb4",
 });

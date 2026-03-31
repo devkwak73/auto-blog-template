@@ -11,7 +11,7 @@ const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
 });
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "부놈의 경매이야기";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "내 블로그";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION;
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
     default: siteName,
   },
-  description: "AI로 더 쉽게, 더 스마트하게 — 부동산 경매 기초부터 실전까지",
+  description: `AI가 매일 글을 쓰는 ${siteName}`,,
   openGraph: {
     type: "website",
     siteName,
