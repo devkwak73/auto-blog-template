@@ -45,15 +45,23 @@ interface UnsplashResult {
   attribution: string;
 }
 
-// ── DB에서 이미 사용된 이미지 URL 조회 ───────────
+// ── DB에서 이미 사용된 이미지 URL 조회 (썸네일 + 본문 인라인 모두) ──
 async function getUsedImageIds(): Promise<Set<string>> {
   const [rows] = await pool.query<mysql.RowDataPacket[]>(
-    "SELECT thumbnail_url FROM posts WHERE thumbnail_url IS NOT NULL"
+    "SELECT thumbnail_url, content FROM posts WHERE status = 'published'"
   );
   const ids = new Set<string>();
+  const inlineRegex = /src="(https:\/\/images\.unsplash\.com\/[^"?]+)/g;
+
   for (const row of rows) {
-    const base = (row.thumbnail_url as string).split("?")[0];
-    ids.add(base);
+    if (row.thumbnail_url) {
+      ids.add((row.thumbnail_url as string).split("?")[0]);
+    }
+    let match;
+    while ((match = inlineRegex.exec(row.content as string)) !== null) {
+      ids.add(match[1]);
+    }
+    inlineRegex.lastIndex = 0;
   }
   return ids;
 }
