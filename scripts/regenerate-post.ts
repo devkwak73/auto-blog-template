@@ -45,8 +45,21 @@ interface UnsplashResult {
   attribution: string;
 }
 
-// ── Unsplash 이미지 여러 장 가져오기 (한 번 호출로 N장) ──
-async function fetchUnsplashImages(category: string, count: number): Promise<UnsplashResult[]> {
+// ── DB에서 이미 사용된 이미지 URL 조회 ───────────
+async function getUsedImageIds(): Promise<Set<string>> {
+  const [rows] = await pool.query<mysql.RowDataPacket[]>(
+    "SELECT thumbnail_url FROM posts WHERE thumbnail_url IS NOT NULL"
+  );
+  const ids = new Set<string>();
+  for (const row of rows) {
+    const base = (row.thumbnail_url as string).split("?")[0];
+    ids.add(base);
+  }
+  return ids;
+}
+
+// ── Unsplash 이미지 여러 장 가져오기 (중복 제외) ─
+async function fetchUnsplashImages(category: string, count: number, usedIds: Set<string> = new Set()): Promise<UnsplashResult[]> {
   const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!unsplashKey) {
     console.log("⚠️  UNSPLASH_ACCESS_KEY 미설정 — 이미지 없이 진행");
@@ -56,37 +69,52 @@ async function fetchUnsplashImages(category: string, count: number): Promise<Uns
   const query = CATEGORY_QUERY[category] ?? "real estate people property";
 
   try {
-    const url = new URL("https://api.unsplash.com/search/photos");
-    url.searchParams.set("query", query);
-    url.searchParams.set("per_page", String(Math.max(count + 2, 5)));
-    url.searchParams.set("orientation", "landscape");
+    const results: UnsplashResult[] = [];
+    let page = 1;
 
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Client-ID ${unsplashKey}` },
-    });
+    while (results.length < count && page <= 3) {
+      const url = new URL("https://api.unsplash.com/search/photos");
+      url.searchParams.set("query", query);
+      url.searchParams.set("per_page", "10");
+      url.searchParams.set("orientation", "landscape");
+      url.searchParams.set("page", String(page));
 
-    if (!res.ok) {
-      console.log(`⚠️  Unsplash API 오류 (${res.status}) — 이미지 없이 진행`);
-      return [];
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `Client-ID ${unsplashKey}` },
+      });
+
+      if (!res.ok) {
+        console.log(`⚠️  Unsplash API 오류 (${res.status}) — 이미지 없이 진행`);
+        break;
+      }
+
+      const data = await res.json() as {
+        results: Array<{
+          id: string;
+          urls: { regular: string };
+          user: { name: string };
+          links: { html: string };
+        }>;
+      };
+
+      if (!data.results?.length) break;
+
+      for (const photo of data.results) {
+        const baseUrl = photo.urls.regular.split("?")[0];
+        if (usedIds.has(baseUrl)) continue;
+        usedIds.add(baseUrl);
+        results.push({
+          url: photo.urls.regular,
+          attribution: `<a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer" style="color:rgba(255,255,255,0.9);">${photo.user.name}</a> / Unsplash`,
+        });
+        if (results.length >= count) break;
+      }
+
+      page++;
     }
 
-    const data = await res.json() as {
-      results: Array<{
-        urls: { regular: string };
-        user: { name: string };
-        links: { html: string };
-      }>;
-    };
-
-    if (!data.results?.length) {
-      console.log("⚠️  Unsplash 검색 결과 없음 — 이미지 없이 진행");
-      return [];
-    }
-
-    return data.results.slice(0, count).map((photo) => ({
-      url: photo.urls.regular,
-      attribution: `<a href="${photo.links.html}?utm_source=auction_blog&utm_medium=referral" rel="noopener noreferrer" style="color:rgba(255,255,255,0.9);">${photo.user.name}</a> / Unsplash`,
-    }));
+    if (!results.length) console.log("⚠️  Unsplash 미사용 이미지 없음 — 이미지 없이 진행");
+    return results;
   } catch (err) {
     console.log(`⚠️  Unsplash fetch 실패: ${err instanceof Error ? err.message : String(err)} — 이미지 없이 진행`);
     return [];
@@ -211,8 +239,9 @@ async function main() {
   console.log(`✍️  생성 완료 (${content.length}자)`);
 
   console.log("🖼️  Unsplash 이미지 가져오는 중...");
-  // 한 번 호출로 썸네일(1장) + 인라인(2장) = 총 3장
-  const allImages = await fetchUnsplashImages(topic.category, 3);
+  const usedIds = await getUsedImageIds();
+  // 재생성 대상 slug는 중복 체크에서 제외 (자기 자신 이미지는 교체 대상)
+  const allImages = await fetchUnsplashImages(topic.category, 3, usedIds);
   const inlineImages = allImages.slice(forceNewImage ? 1 : 0, forceNewImage ? 3 : 2);
   const contentWithImages = injectImagesIntoContent(content, inlineImages);
 
